@@ -7,6 +7,7 @@ import pl.zajavka.domain.CarToBuy;
 import pl.zajavka.infrastructure.database.repository.jpa.CarToBuyJpaRepository;
 import pl.zajavka.infrastructure.database.repository.mapper.CarToBuyEntityMapper;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -28,5 +29,14 @@ public class CarToBuyRepository implements CarToBuyDAO {
     public Optional<CarToBuy> findCarToBuyByVin(String vin) {
         return carToBuyJpaRepository.findByVin(vin)
             .map(carToBuyEntityMapper::mapFromEntity);
+    }
+
+    @Override
+    public List<CarToBuy> searchAvailableCars(String brand, String model, Integer yearFrom, Integer yearTo,
+                                               String color, BigDecimal priceFrom, BigDecimal priceTo) {
+        return carToBuyJpaRepository.searchAvailableCars(brand, model, yearFrom, yearTo, color, priceFrom, priceTo)
+            .stream()
+            .map(carToBuyEntityMapper::mapFromEntity)
+            .toList();
     }
 }

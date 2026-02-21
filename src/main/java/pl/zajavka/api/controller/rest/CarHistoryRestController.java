@@ -2,14 +2,10 @@ package pl.zajavka.api.controller.rest;
 
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import pl.zajavka.api.dto.CarHistoryDTO;
-import pl.zajavka.api.dto.CarToServiceDTO;
 import pl.zajavka.api.dto.mapper.CarMapper;
 import pl.zajavka.business.CarService;
-import pl.zajavka.domain.CarHistory;
-import pl.zajavka.domain.exception.NotFoundException;
 
 import java.util.Objects;
 

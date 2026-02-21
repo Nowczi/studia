@@ -14,14 +14,10 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.util.LinkedMultiValueMap;
 import pl.zajavka.api.dto.CarPurchaseDTO;
-import pl.zajavka.api.dto.InvoiceDTO;
 import pl.zajavka.api.dto.mapper.CarMapper;
 import pl.zajavka.api.dto.mapper.CarPurchaseMapper;
-import pl.zajavka.business.CarPurchaseService;
 import pl.zajavka.domain.Invoice;
 
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
 import java.util.Map;
 import java.util.stream.Stream;
 

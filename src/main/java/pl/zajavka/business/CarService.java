@@ -11,6 +11,7 @@ import pl.zajavka.domain.CarToBuy;
 import pl.zajavka.domain.CarToService;
 import pl.zajavka.domain.exception.NotFoundException;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -26,6 +27,15 @@ public class CarService {
     public List<CarToBuy> findAvailableCars() {
         List<CarToBuy> availableCars = carToBuyDAO.findAvailable();
         log.info("Available cars: [{}]", availableCars.size());
+        return availableCars;
+    }
+
+    @Transactional
+    public List<CarToBuy> searchAvailableCars(String brand, String model, Integer yearFrom, Integer yearTo,
+                                               String color, BigDecimal priceFrom, BigDecimal priceTo) {
+        List<CarToBuy> availableCars = carToBuyDAO.searchAvailableCars(brand, model, yearFrom, yearTo, 
+                                                                        color, priceFrom, priceTo);
+        log.info("Search found cars: [{}]", availableCars.size());
         return availableCars;
     }
 

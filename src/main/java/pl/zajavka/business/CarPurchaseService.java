@@ -10,6 +10,7 @@ import pl.zajavka.domain.Customer;
 import pl.zajavka.domain.Invoice;
 import pl.zajavka.domain.Salesman;
 
+import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
@@ -27,6 +28,11 @@ public class CarPurchaseService {
 
     public List<CarToBuy> availableCars() {
         return carService.findAvailableCars();
+    }
+
+    public List<CarToBuy> searchAvailableCars(String brand, String model, Integer yearFrom, Integer yearTo,
+                                               String color, BigDecimal priceFrom, BigDecimal priceTo) {
+        return carService.searchAvailableCars(brand, model, yearFrom, yearTo, color, priceFrom, priceTo);
     }
 
     public List<Salesman> availableSalesmen() {

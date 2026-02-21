@@ -3,13 +3,16 @@ package pl.zajavka.api.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.ui.ModelMap;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 import pl.zajavka.api.dto.CarPurchaseDTO;
+import pl.zajavka.api.dto.CarSearchDTO;
 import pl.zajavka.api.dto.CarToBuyDTO;
 import pl.zajavka.api.dto.mapper.CarMapper;
 import pl.zajavka.api.dto.mapper.CarPurchaseMapper;
@@ -18,6 +21,8 @@ import pl.zajavka.domain.CarPurchaseRequest;
 import pl.zajavka.domain.Invoice;
 import pl.zajavka.domain.Salesman;
 
+import java.math.BigDecimal;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -32,26 +37,55 @@ public class PurchaseController {
     private final CarMapper carMapper;
 
     @GetMapping(value = PURCHASE)
-    public ModelAndView carPurchasePage() {
-        Map<String, ?> model = prepareCarPurchaseData();
-        return new ModelAndView("car_purchase", model);
+    public ModelAndView carPurchasePage(
+            @RequestParam(required = false) String brand,
+            @RequestParam(required = false) String model,
+            @RequestParam(required = false) Integer yearFrom,
+            @RequestParam(required = false) Integer yearTo,
+            @RequestParam(required = false) String color,
+            @RequestParam(required = false) BigDecimal priceFrom,
+            @RequestParam(required = false) BigDecimal priceTo) {
+        
+        Map<String, ?> modelData = prepareCarPurchaseData(brand, model, yearFrom, yearTo, color, priceFrom, priceTo);
+        return new ModelAndView("car_purchase", modelData);
     }
 
-    private Map<String, ?> prepareCarPurchaseData() {
-        var availableCars = carPurchaseService.availableCars().stream()
-            .map(carMapper::map)
-            .toList();
+    private Map<String, ?> prepareCarPurchaseData(String brand, String model, Integer yearFrom, Integer yearTo,
+                                                   String color, BigDecimal priceFrom, BigDecimal priceTo) {
+        
+        List<CarToBuyDTO> availableCars;
+        
+        // Check if any search parameters are provided
+        boolean hasSearchParams = brand != null || model != null || yearFrom != null || yearTo != null 
+                || color != null || priceFrom != null || priceTo != null;
+        
+        if (hasSearchParams) {
+            // Perform search with filters
+            availableCars = carPurchaseService.searchAvailableCars(
+                    brand, model, yearFrom, yearTo, color, priceFrom, priceTo)
+                .stream()
+                .map(carMapper::map)
+                .toList();
+        } else {
+            // Get all available cars
+            availableCars = carPurchaseService.availableCars().stream()
+                .map(carMapper::map)
+                .toList();
+        }
+        
         var availableCarVins = availableCars.stream()
             .map(CarToBuyDTO::getVin)
             .toList();
         var availableSalesmanPesels = carPurchaseService.availableSalesmen().stream()
             .map(Salesman::getPesel)
             .toList();
+        
         return Map.of(
             "availableCarDTOs", availableCars,
             "availableCarVins", availableCarVins,
             "availableSalesmanPesels", availableSalesmanPesels,
-            "carPurchaseDTO", CarPurchaseDTO.buildDefaultData()
+            "carPurchaseDTO", CarPurchaseDTO.buildDefaultData(),
+            "carSearchDTO", new CarSearchDTO(brand, model, yearFrom, yearTo, color, priceFrom, priceTo)
         );
     }
 
