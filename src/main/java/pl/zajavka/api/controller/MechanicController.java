@@ -2,6 +2,7 @@ package pl.zajavka.api.controller;
 
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.validation.BindingResult;
@@ -22,10 +23,15 @@ import pl.zajavka.business.CarServiceProcessingService;
 import pl.zajavka.business.CarServiceRequestService;
 import pl.zajavka.business.PartCatalogService;
 import pl.zajavka.business.ServiceCatalogService;
+import pl.zajavka.business.dao.MechanicDAO;
 import pl.zajavka.domain.CarServiceProcessingRequest;
+import pl.zajavka.domain.Mechanic;
 import pl.zajavka.domain.Part;
+import pl.zajavka.infrastructure.security.UserEntity;
+import pl.zajavka.infrastructure.security.UserRepository;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -44,10 +50,24 @@ public class MechanicController {
     private final MechanicMapper mechanicMapper;
     private final PartMapper partMapper;
     private final ServiceMapper serviceMapper;
+    private final UserRepository userRepository;
+    private final MechanicDAO mechanicDAO;
 
     @GetMapping(value = MECHANIC)
     public ModelAndView mechanicCheckPage() {
-        Map<String, ?> data = prepareNecessaryData();
+        Map<String, Object> data = new HashMap<>(prepareNecessaryData());
+        
+        // Get current logged-in mechanic's name
+        String userName = SecurityContextHolder.getContext().getAuthentication().getName();
+        UserEntity user = userRepository.findByUserName(userName);
+        
+        if (user != null) {
+            mechanicDAO.findByUserId(user.getId()).ifPresent(mechanic -> {
+                data.put("mechanicName", mechanic.getName());
+                data.put("mechanicSurname", mechanic.getSurname());
+            });
+        }
+        
         return new ModelAndView("mechanic_service", data);
     }
 

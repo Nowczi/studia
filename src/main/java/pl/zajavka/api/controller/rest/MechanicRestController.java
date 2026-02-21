@@ -3,7 +3,6 @@ package pl.zajavka.api.controller.rest;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-import pl.zajavka.api.controller.MechanicController;
 import pl.zajavka.api.dto.CarServiceMechanicProcessingUnitDTO;
 import pl.zajavka.api.dto.CarServiceRequestDTO;
 import pl.zajavka.api.dto.CarServiceRequestsDTO;

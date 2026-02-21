@@ -11,10 +11,17 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfiguration {
+
+    private final AuthenticationSuccessHandler customLoginSuccessHandler;
+
+    public SecurityConfiguration(AuthenticationSuccessHandler customLoginSuccessHandler) {
+        this.customLoginSuccessHandler = customLoginSuccessHandler;
+    }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -43,12 +50,13 @@ public class SecurityConfiguration {
                 .authorizeHttpRequests()
                 .requestMatchers("/login", "/error", "/images/oh_no.png").permitAll()
                 .requestMatchers("/admin/**").hasAnyAuthority("ADMIN")
-                .requestMatchers("/mechanic/**").hasAnyAuthority("MECHANIC")
-                .requestMatchers("/salesman/**", "/purchase/**", "/service/**").hasAnyAuthority("SALESMAN")
-                .requestMatchers("/", "/car/**", "/images/**").hasAnyAuthority("MECHANIC", "SALESMAN")
-                .requestMatchers("/api/**").hasAnyAuthority("REST_API")
+                .requestMatchers("/mechanic/**").hasAnyAuthority("MECHANIC", "ADMIN")
+                .requestMatchers("/salesman/**", "/purchase/**", "/service/**").hasAnyAuthority("SALESMAN", "ADMIN")
+                .requestMatchers("/", "/car/**", "/images/**").hasAnyAuthority("MECHANIC", "SALESMAN", "ADMIN")
+                .requestMatchers("/api/**").hasAnyAuthority("REST_API", "ADMIN")
                 .and()
                 .formLogin()
+                .successHandler(customLoginSuccessHandler)
                 .permitAll()
                 .and()
                 .logout()

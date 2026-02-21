@@ -14,14 +14,19 @@
 <div class="container">
     <h1>Zajavka Car Dealer!</h1>
     <div class="row mt-3">
-        <div class="col-md-4">
+        <div class="col-md-3">
             <a th:href="@{/salesman}" class="btn btn-info" role="button">Salesman Portal</a>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-3">
             <a th:href="@{/mechanic}" class="btn btn-info" role="button">Mechanic Portal</a>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-3">
             <a th:href="@{/admin}" class="btn btn-danger" role="button">Admin Portal</a>
+        </div>
+        <div class="col-md-3">
+            <form th:action="@{/logout}" method="POST">
+                <button type="submit" class="btn btn-danger">Logout</button>
+            </form>
         </div>
     </div>
 </div>

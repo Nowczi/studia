@@ -20,6 +20,11 @@
             <div class="col-md-4">
                 <a th:href="@{/}" class="btn btn-info" role="button">Go back to the main page</a>
             </div>
+            <div class="col-md-4">
+                <form th:action="@{/logout}" method="POST">
+                    <button type="submit" class="btn btn-danger">Logout</button>
+                </form>
+            </div>
         </div>
         <br>
         <h2>Want to buy a car?</h2>
@@ -46,52 +51,6 @@
                     <td th:text="${car.year}"></td>
                     <td th:text="${car.color}"></td>
                     <td th:text="${car.price}"></td>
-                </tr>
-                </tbody>
-            </table>
-        </div>
-
-        <br>
-        <br>
-        <p>Here You can find available salesmen!</p>
-
-        <div>
-            <table class="table">
-                <thead class="table-dark">
-                <tr>
-                    <th>name</th>
-                    <th>surname</th>
-                    <th>pesel</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr th:each="salesman : ${availableSalesmenDTOs}">
-                    <td th:text="${salesman.name}"></td>
-                    <td th:text="${salesman.surname}"></td>
-                    <td th:text="${salesman.pesel}"></td>
-                </tr>
-                </tbody>
-            </table>
-        </div>
-
-        <br>
-        <br>
-        <p>Please take a look at our mechanics!</p>
-
-        <div>
-            <table class="table">
-                <thead class="table-dark">
-                <tr>
-                    <th>name</th>
-                    <th>surname</th>
-                    <th>pesel</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr th:each="mechanic : ${availableMechanicDTOs}">
-                    <td th:text="${mechanic.name}"></td>
-                    <td th:text="${mechanic.surname}"></td>
-                    <td th:text="${mechanic.pesel}"></td>
                 </tr>
                 </tbody>
             </table>

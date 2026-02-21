@@ -20,12 +20,17 @@
             <div class="col-md-4">
                 <a th:href="@{/}" class="btn btn-info" role="button">Go back to the main page</a>
             </div>
+            <div class="col-md-4">
+                <form th:action="@{/logout}" method="POST">
+                    <button type="submit" class="btn btn-danger">Logout</button>
+                </form>
+            </div>
         </div>
 
         <br>
         <br>
 
-        <h2>Hi mechanic!</h2>
+        <h2 th:text="'Hi ' + ${mechanicName} + ' ' + ${mechanicSurname} + '!'">Hi mechanic!</h2>
         <p>Check the following service requests and work on them!</p>
 
         <table class="table">
