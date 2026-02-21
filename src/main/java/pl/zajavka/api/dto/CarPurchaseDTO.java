@@ -23,9 +23,14 @@ public class CarPurchaseDTO {
 
     private String customerName;
     private String customerSurname;
-    @Size
-    @Pattern(regexp = "^[+]\\d{2}\\s\\d{3}\\s\\d{3}\\s\\d{3}$")
+    
+    // Modified pattern to allow empty string for existing customers
+    // The pattern now matches either:
+    // 1. Empty string (for existing customers who don't need to provide phone)
+    // 2. Valid phone format: +XX XXX XXX XXX (for new customers)
+    @Pattern(regexp = "^(?:|[+]\\d{2}\\s\\d{3}\\s\\d{3}\\s\\d{3})$")
     private String customerPhone;
+    
     @Email
     private String customerEmail;
     private String customerAddressCountry;

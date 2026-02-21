@@ -3,7 +3,6 @@ package pl.zajavka.integration.support;
 import io.restassured.specification.RequestSpecification;
 import org.springframework.http.HttpStatus;
 import pl.zajavka.api.controller.rest.PurchaseRestController;
-import pl.zajavka.api.dto.CarPurchaseDTO;
 import pl.zajavka.api.dto.CarsToBuyDTO;
 import pl.zajavka.api.dto.InvoiceDTO;
 

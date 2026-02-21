@@ -57,15 +57,28 @@ public class MechanicController {
     public ModelAndView mechanicCheckPage() {
         Map<String, Object> data = new HashMap<>(prepareNecessaryData());
         
-        // Get current logged-in mechanic's name
+        // Get current logged-in user's name
         String userName = SecurityContextHolder.getContext().getAuthentication().getName();
         UserEntity user = userRepository.findByUserName(userName);
         
         if (user != null) {
-            mechanicDAO.findByUserId(user.getId()).ifPresent(mechanic -> {
+            // Try to find mechanic profile for the user
+            var mechanicOptional = mechanicDAO.findByUserId(user.getId());
+            if (mechanicOptional.isPresent()) {
+                Mechanic mechanic = mechanicOptional.get();
                 data.put("mechanicName", mechanic.getName());
                 data.put("mechanicSurname", mechanic.getSurname());
-            });
+            } else {
+                // User is not a mechanic (e.g., Admin), use username or default greeting
+                // Capitalize first letter of username for better display
+                String displayName = userName.substring(0, 1).toUpperCase() + userName.substring(1);
+                data.put("mechanicName", displayName);
+                data.put("mechanicSurname", "");
+            }
+        } else {
+            // Fallback if user not found
+            data.put("mechanicName", "User");
+            data.put("mechanicSurname", "");
         }
         
         return new ModelAndView("mechanic_service", data);

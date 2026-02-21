@@ -13,7 +13,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
-import pl.zajavka.api.dto.CarPurchaseDTO;
 import pl.zajavka.api.dto.InvoiceDTO;
 import pl.zajavka.api.dto.mapper.CarPurchaseMapper;
 import pl.zajavka.api.dto.mapper.InvoiceMapper;

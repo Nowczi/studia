@@ -1,9 +1,6 @@
 package pl.zajavka.integration.rest;
 
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
-import pl.zajavka.api.dto.CarPurchaseDTO;
-import pl.zajavka.api.dto.CarToBuyDTO;
 import pl.zajavka.api.dto.CarsToBuyDTO;
 import pl.zajavka.api.dto.InvoiceDTO;
 import pl.zajavka.integration.configuration.RestAssuredIntegrationTestBase;
