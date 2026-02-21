@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Repository;
 import pl.zajavka.business.dao.MechanicDAO;
 import pl.zajavka.domain.Mechanic;
+import pl.zajavka.infrastructure.database.entity.MechanicEntity;
 import pl.zajavka.infrastructure.database.repository.jpa.MechanicJpaRepository;
 import pl.zajavka.infrastructure.database.repository.mapper.MechanicEntityMapper;
 
@@ -29,5 +30,17 @@ public class MechanicRepository implements MechanicDAO {
     public Optional<Mechanic> findByPesel(String pesel) {
         return mechanicJpaRepository.findByPesel(pesel)
             .map(mechanicEntityMapper::mapFromEntity);
+    }
+
+    @Override
+    public Optional<Mechanic> findByUserId(Integer userId) {
+        return mechanicJpaRepository.findByUserId(userId)
+            .map(mechanicEntityMapper::mapFromEntity);
+    }
+
+    @Override
+    public void save(Mechanic mechanic) {
+        MechanicEntity entity = mechanicEntityMapper.mapToEntity(mechanic);
+        mechanicJpaRepository.save(entity);
     }
 }

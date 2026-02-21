@@ -11,4 +11,7 @@ public interface MechanicEntityMapper {
 
     @Mapping(target = "serviceMechanics", ignore = true)
     Mechanic mapFromEntity(MechanicEntity entity);
+
+    @Mapping(target = "serviceMechanics", ignore = true)
+    MechanicEntity mapToEntity(Mechanic mechanic);
 }

@@ -10,4 +10,6 @@ import java.util.Optional;
 public interface MechanicJpaRepository extends JpaRepository<MechanicEntity, Integer> {
 
     Optional<MechanicEntity> findByPesel(String pesel);
+
+    Optional<MechanicEntity> findByUserId(Integer userId);
 }

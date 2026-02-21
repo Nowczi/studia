@@ -45,4 +45,7 @@ public class MechanicEntity {
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "mechanic")
     private Set<ServiceMechanicEntity> serviceMechanics;
+
+    @Column(name = "user_id")
+    private Integer userId;
 }

@@ -45,4 +45,7 @@ public class SalesmanEntity {
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "salesman")
     private Set<InvoiceEntity> invoices;
+
+    @Column(name = "user_id")
+    private Integer userId;
 }

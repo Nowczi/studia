@@ -11,4 +11,7 @@ public interface SalesmanEntityMapper {
 
     @Mapping(target = "invoices", ignore = true)
     Salesman mapFromEntity(SalesmanEntity entity);
+
+    @Mapping(target = "invoices", ignore = true)
+    SalesmanEntity mapToEntity(Salesman salesman);
 }

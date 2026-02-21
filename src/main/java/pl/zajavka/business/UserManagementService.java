@@ -4,12 +4,17 @@ import lombok.AllArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import pl.zajavka.business.dao.MechanicDAO;
+import pl.zajavka.business.dao.SalesmanDAO;
 import pl.zajavka.business.dao.UserDAO;
+import pl.zajavka.domain.Mechanic;
+import pl.zajavka.domain.Salesman;
 import pl.zajavka.domain.User;
 import pl.zajavka.domain.exception.NotFoundException;
 import pl.zajavka.domain.exception.ProcessingException;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 @Service
@@ -18,6 +23,8 @@ public class UserManagementService {
 
     private final UserDAO userDAO;
     private final PasswordEncoder passwordEncoder;
+    private final MechanicDAO mechanicDAO;
+    private final SalesmanDAO salesmanDAO;
 
     @Transactional(readOnly = true)
     public List<User> findAllUsers() {
@@ -63,10 +70,22 @@ public class UserManagementService {
             throw new ProcessingException("Cannot delete the admin user");
         }
 
-        // SOFT DELETE: Set active to false instead of hard delete
-        // This avoids FK constraint issues with salesman/mechanic tables
-        User deactivatedUser = user.withActive(false);
-        userDAO.save(deactivatedUser);
+        // Unlink user from mechanic if exists
+        Optional<Mechanic> mechanic = mechanicDAO.findByUserId(userId);
+        mechanic.ifPresent(m -> {
+            Mechanic unlinkedMechanic = m.withUserId(null);
+            mechanicDAO.save(unlinkedMechanic);
+        });
+
+        // Unlink user from salesman if exists
+        Optional<Salesman> salesman = salesmanDAO.findByUserId(userId);
+        salesman.ifPresent(s -> {
+            Salesman unlinkedSalesman = s.withUserId(null);
+            salesmanDAO.save(unlinkedSalesman);
+        });
+
+        // HARD DELETE: Permanently delete the user from the database
+        userDAO.deleteById(userId);
     }
 
     @Transactional

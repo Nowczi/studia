@@ -10,4 +10,8 @@ public interface MechanicDAO {
     List<Mechanic> findAvailable();
 
     Optional<Mechanic> findByPesel(String pesel);
+
+    Optional<Mechanic> findByUserId(Integer userId);
+
+    void save(Mechanic mechanic);
 }

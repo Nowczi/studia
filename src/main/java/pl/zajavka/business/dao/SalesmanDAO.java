@@ -10,4 +10,8 @@ public interface SalesmanDAO {
     Optional<Salesman> findByPesel(String pesel);
 
     List<Salesman> findAvailable();
+
+    Optional<Salesman> findByUserId(Integer userId);
+
+    void save(Salesman salesman);
 }

@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Repository;
 import pl.zajavka.business.dao.SalesmanDAO;
 import pl.zajavka.domain.Salesman;
+import pl.zajavka.infrastructure.database.entity.SalesmanEntity;
 import pl.zajavka.infrastructure.database.repository.jpa.SalesmanJpaRepository;
 import pl.zajavka.infrastructure.database.repository.mapper.SalesmanEntityMapper;
 
@@ -29,5 +30,17 @@ public class SalesmanRepository implements SalesmanDAO {
     public Optional<Salesman> findByPesel(String pesel) {
         return salesmanJpaRepository.findByPesel(pesel)
             .map(salesmanEntityMapper::mapFromEntity);
+    }
+
+    @Override
+    public Optional<Salesman> findByUserId(Integer userId) {
+        return salesmanJpaRepository.findByUserId(userId)
+            .map(salesmanEntityMapper::mapFromEntity);
+    }
+
+    @Override
+    public void save(Salesman salesman) {
+        SalesmanEntity entity = salesmanEntityMapper.mapToEntity(salesman);
+        salesmanJpaRepository.save(entity);
     }
 }

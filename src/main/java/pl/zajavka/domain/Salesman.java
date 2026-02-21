@@ -20,4 +20,5 @@ public class Salesman {
     String surname;
     String pesel;
     Set<Invoice> invoices;
+    Integer userId;
 }
