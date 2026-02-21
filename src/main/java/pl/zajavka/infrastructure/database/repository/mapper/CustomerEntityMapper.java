@@ -11,6 +11,7 @@ import pl.zajavka.infrastructure.database.entity.CarServiceRequestEntity;
 import pl.zajavka.infrastructure.database.entity.CustomerEntity;
 import pl.zajavka.infrastructure.database.entity.InvoiceEntity;
 
+import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -25,12 +26,20 @@ public interface CustomerEntityMapper {
     @Named("mapInvoices")
     @SuppressWarnings("unused")
     default Set<Invoice> mapInvoices(Set<InvoiceEntity> invoiceEntities) {
+        if (invoiceEntities == null) {
+            // Return mutable HashSet instead of immutable Collections.emptySet()
+            return new HashSet<>();
+        }
         return invoiceEntities.stream().map(this::mapFromEntity).collect(Collectors.toSet());
     }
 
     @Named("mapCarServiceRequests")
     @SuppressWarnings("unused")
     default Set<CarServiceRequest> mapCarServiceRequests(Set<CarServiceRequestEntity> entities) {
+        if (entities == null) {
+            // Return mutable HashSet instead of immutable Collections.emptySet()
+            return new HashSet<>();
+        }
         return entities.stream().map(this::mapFromEntity).collect(Collectors.toSet());
     }
 
@@ -45,6 +54,9 @@ public interface CustomerEntityMapper {
     @Mapping(target = "salesman", ignore = true)
     Invoice mapFromEntity(InvoiceEntity entity);
 
+    // When mapping to entity, ignore collections and ensure address is mapped
     @Mapping(target = "carServiceRequests", ignore = true)
+    @Mapping(target = "invoices", ignore = true)
+    @Mapping(target = "address.customer", ignore = true)
     CustomerEntity mapToEntity(Customer customer);
 }
