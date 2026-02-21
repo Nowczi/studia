@@ -33,7 +33,7 @@
         <form action="#" th:action="@{/service/request}" th:object="${carServiceRequestDTO}" method="POST">
             <div class="row mt-3">
                 <div class="col-md-6">
-                    <h3>If you are existing customer - please give us your email and provide car vin number!</h3>
+                    <h3>If you are existing customer - please give us your email and provide car details!</h3>
                     <div class="row mt-3">
                         <div class="col-md-3">
                             <label for="existingCustomerEmail">Your email:</label>
@@ -48,6 +48,32 @@
                         </div>
                         <div class="col-md-3">
                             <input type="text" id="existingCarVin" th:field="*{existingCarVin}">
+                        </div>
+                    </div>
+                    <br>
+                    <p><em>If your car is not in our database, please provide additional car details:</em></p>
+                    <div class="row mt-3">
+                        <div class="col-md-3">
+                            <label for="existingCarBrand">Car Brand:</label>
+                        </div>
+                        <div class="col-md-3">
+                            <input type="text" id="existingCarBrand" th:field="*{existingCarBrand}">
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-md-3">
+                            <label for="existingCarModel">Car Model:</label>
+                        </div>
+                        <div class="col-md-3">
+                            <input type="text" id="existingCarModel" th:field="*{existingCarModel}">
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-md-3">
+                            <label for="existingCarYear">Car Year:</label>
+                        </div>
+                        <div class="col-md-3">
+                            <input type="text" id="existingCarYear" th:field="*{existingCarYear}">
                         </div>
                     </div>
                 </div>

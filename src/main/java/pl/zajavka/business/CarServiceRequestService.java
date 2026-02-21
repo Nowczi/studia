@@ -15,6 +15,7 @@ import pl.zajavka.domain.exception.ProcessingException;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
+import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
 
@@ -37,7 +38,8 @@ public class CarServiceRequestService {
 
     @Transactional
     public void makeServiceRequest(CarServiceRequest serviceRequest) {
-        if (serviceRequest.getCar().shouldExistsInCarToBuy()) {
+        // Check if this is an existing customer (name is null) or new customer (name is provided)
+        if (serviceRequest.getCustomer().getName() == null) {
             saveServiceRequestForExistingCar(serviceRequest);
         } else {
             saveServiceRequestForNewCar(serviceRequest);
@@ -48,7 +50,7 @@ public class CarServiceRequestService {
         validate(request.getCar().getVin());
 
         CarToService car = carService.findCarToService(request.getCar().getVin())
-            .orElse(findInCarToBuyAndSaveInCarToService(request.getCar()));
+            .orElseGet(() -> findInCarToBuyOrCreateNewCarToService(request.getCar()));
         Customer customer = customerService.findCustomer(request.getCustomer().getEmail());
 
         CarServiceRequest carServiceRequest = buildCarServiceRequest(request, car, customer);
@@ -78,9 +80,19 @@ public class CarServiceRequestService {
         }
     }
 
-    private CarToService findInCarToBuyAndSaveInCarToService(CarToService car) {
-        CarToBuy carToBuy = carService.findCarToBuy(car.getVin());
-        return carService.saveCarToService(carToBuy);
+    private CarToService findInCarToBuyOrCreateNewCarToService(CarToService car) {
+        Optional<CarToBuy> carToBuy = carService.findOptionalCarToBuy(car.getVin());
+        if (carToBuy.isPresent()) {
+            return carService.saveCarToService(carToBuy.get());
+        } else {
+            // Car not found in car_to_buy, create new car in car_to_service with provided details
+            if (car.getBrand() == null || car.getModel() == null || car.getYear() == null) {
+                throw new NotFoundException(
+                    "Could not find car by vin: [%s]. Please provide car details (brand, model, year).".formatted(car.getVin())
+                );
+            }
+            return carService.saveCarToService(car);
+        }
     }
 
     private CarServiceRequest buildCarServiceRequest(

@@ -44,6 +44,9 @@ public interface CarServiceRequestMapper extends OffsetDateTimeMapper {
                     .build())
                 .car(CarToService.builder()
                     .vin(dto.getExistingCarVin())
+                    .brand(dto.getExistingCarBrand())
+                    .model(dto.getExistingCarModel())
+                    .year(dto.getExistingCarYear())
                     .build())
                 .customerComment(dto.getCustomerComment())
                 .build();

@@ -49,6 +49,11 @@ public class CarService {
     }
 
     @Transactional
+    public Optional<CarToBuy> findOptionalCarToBuy(String vin) {
+        return carToBuyDAO.findCarToBuyByVin(vin);
+    }
+
+    @Transactional
     public Optional<CarToService> findCarToService(String vin) {
         return carToServiceDAO.findCarToServiceByVin(vin);
     }

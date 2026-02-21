@@ -25,6 +25,9 @@ public class CarServiceCustomerRequestDTO {
     private String customerAddressStreet;
 
     private String existingCarVin;
+    private String existingCarBrand;
+    private String existingCarModel;
+    private Integer existingCarYear;
     private String carVin;
     private String carBrand;
     private String carModel;
