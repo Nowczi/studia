@@ -44,14 +44,9 @@ public class UserMapper {
         if (entity == null) {
             return null;
         }
-        // Handle null ID safely
-        Integer id = null;
-        if (entity.getId() != 0) {  // Check if ID was assigned (not default 0)
-            id = entity.getId();
-        }
 
         return User.builder()
-                .id(id)
+                .id(entity.getId())
                 .userName(entity.getUserName())
                 .email(entity.getEmail())
                 .password(entity.getPassword())

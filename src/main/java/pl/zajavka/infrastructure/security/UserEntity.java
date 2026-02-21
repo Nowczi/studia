@@ -29,7 +29,7 @@ public class UserEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id")
-    private int id;
+    private Integer id;
 
     @Column(name = "user_name")
     @Length(min = 5)
@@ -46,8 +46,8 @@ public class UserEntity {
 
     @ManyToMany(cascade = CascadeType.MERGE)
     @JoinTable(
-        name = "car_dealership_user_role",
-        joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id")
+            name = "car_dealership_user_role",
+            joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id")
     )
     private Set<RoleEntity> roles;
 }
