@@ -49,7 +49,6 @@ public class UserManagementService {
         String encodedPassword = passwordEncoder.encode(user.getPassword());
 
         User userToSave = user
-                .withId(findAllUsers().size()+1)
                 .withPassword(encodedPassword)
                 .withActive(true)
                 .withRoles(roles);
