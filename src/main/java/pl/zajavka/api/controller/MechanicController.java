@@ -43,6 +43,7 @@ public class MechanicController {
 
     private final CarServiceProcessingService carServiceProcessingService;
     private final CarServiceRequestService carServiceRequestService;
+
     private final PartCatalogService partCatalogService;
     private final ServiceCatalogService serviceCatalogService;
     private final CarServiceRequestMapper carServiceRequestMapper;

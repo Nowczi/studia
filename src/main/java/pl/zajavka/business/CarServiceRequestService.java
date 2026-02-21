@@ -13,7 +13,7 @@ import pl.zajavka.domain.exception.NotFoundException;
 import pl.zajavka.domain.exception.ProcessingException;
 
 import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
@@ -100,7 +100,7 @@ public class CarServiceRequestService {
         CarToService car,
         Customer customer
     ) {
-        OffsetDateTime when = OffsetDateTime.of(2027, 1, 10, 10, 2, 10, 0, ZoneOffset.UTC);
+        OffsetDateTime when = OffsetDateTime.now(ZoneId.of("Europe/Warsaw"));
         return CarServiceRequest.builder()
             .carServiceRequestNumber(generateCarServiceRequestNumber(when))
             .receivedDateTime(when)
@@ -113,7 +113,7 @@ public class CarServiceRequestService {
     private String generateCarServiceRequestNumber(OffsetDateTime when) {
         return "%s.%s.%s-%s.%s.%s.%s".formatted(
             when.getYear(),
-            when.getMonth().ordinal(),
+            when.getMonthValue(),
             when.getDayOfMonth(),
             when.getHour(),
             when.getMinute(),

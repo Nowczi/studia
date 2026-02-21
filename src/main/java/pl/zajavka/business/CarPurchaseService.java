@@ -12,7 +12,7 @@ import pl.zajavka.domain.Salesman;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -90,7 +90,7 @@ public class CarPurchaseService {
     private Invoice buildInvoice(CarToBuy car, Salesman salesman) {
         return Invoice.builder()
             .invoiceNumber(UUID.randomUUID().toString())
-            .dateTime(OffsetDateTime.of(2025, 10, 1, 12, 0, 0, 0, ZoneOffset.UTC))
+            .dateTime(OffsetDateTime.now(ZoneId.of("Europe/Warsaw")))
             .car(car)
             .salesman(salesman)
             .build();

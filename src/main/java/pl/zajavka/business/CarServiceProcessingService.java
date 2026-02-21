@@ -12,7 +12,7 @@ import pl.zajavka.domain.ServiceMechanic;
 import pl.zajavka.domain.ServicePart;
 
 import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
+import java.time.ZoneId;
 
 @org.springframework.stereotype.Service
 @AllArgsConstructor
@@ -36,7 +36,7 @@ public class CarServiceProcessingService {
         ServiceMechanic serviceMechanic = buildServiceMechanic(request, mechanic, serviceRequest, service);
 
         if (request.getDone()) {
-            serviceRequest = serviceRequest.withCompletedDateTime(OffsetDateTime.of(2029, 3, 2, 10, 9, 12, 0, ZoneOffset.UTC));
+            serviceRequest = serviceRequest.withCompletedDateTime(OffsetDateTime.now(ZoneId.of("Europe/Warsaw")));
         }
 
         if (request.partNotIncluded()) {
