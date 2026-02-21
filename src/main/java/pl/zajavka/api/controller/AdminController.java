@@ -56,7 +56,10 @@ public class AdminController {
     @PostMapping(value = ADMIN_CREATE_USER)
     public String createUser(
             @Valid @ModelAttribute("newUserDTO") UserDTO userDTO,
-            @RequestParam(value = "selectedRoles", required = false) Set<String> selectedRoles,
+            @RequestParam("selectedRole") String selectedRole,
+            @RequestParam("name") String name,
+            @RequestParam("surname") String surname,
+            @RequestParam("pesel") String pesel,
             BindingResult bindingResult,
             RedirectAttributes redirectAttributes,
             Model model
@@ -67,15 +70,15 @@ public class AdminController {
             return "admin_portal";
         }
 
-        if (selectedRoles == null || selectedRoles.isEmpty()) {
+        if (selectedRole == null || selectedRole.isEmpty()) {
             model.addAllAttributes(prepareAdminData());
-            model.addAttribute("errorMessage", "At least one role must be selected");
+            model.addAttribute("errorMessage", "Role must be selected");
             return "admin_portal";
         }
 
         try {
             User user = userMapper.map(userDTO);
-            userManagementService.createUser(user, selectedRoles);
+            userManagementService.createUser(user, selectedRole, name, surname, pesel);
             redirectAttributes.addFlashAttribute("successMessage", "User created successfully");
             return "redirect:/admin";
         } catch (Exception e) {

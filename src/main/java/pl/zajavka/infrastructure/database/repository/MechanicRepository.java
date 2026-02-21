@@ -43,4 +43,9 @@ public class MechanicRepository implements MechanicDAO {
         MechanicEntity entity = mechanicEntityMapper.mapToEntity(mechanic);
         mechanicJpaRepository.save(entity);
     }
+
+    @Override
+    public void deleteByUserId(Integer userId) {
+        mechanicJpaRepository.deleteByUserId(userId);
+    }
 }

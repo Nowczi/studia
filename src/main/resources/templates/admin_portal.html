@@ -64,14 +64,39 @@
                 </div>
                 <div class="row mt-3">
                     <div class="col-md-3">
-                        <label>Roles:</label>
+                        <label for="name">Name:</label>
+                    </div>
+                    <div class="col-md-9">
+                        <input type="text" id="name" name="name" class="form-control" required>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-md-3">
+                        <label for="surname">Surname:</label>
+                    </div>
+                    <div class="col-md-9">
+                        <input type="text" id="surname" name="surname" class="form-control" required>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-md-3">
+                        <label for="pesel">PESEL:</label>
+                    </div>
+                    <div class="col-md-9">
+                        <input type="text" id="pesel" name="pesel" class="form-control" required pattern="[0-9]{11}" title="PESEL must be 11 digits">
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-md-3">
+                        <label>Role:</label>
                     </div>
                     <div class="col-md-9">
                         <div th:each="role : ${availableRoles}">
-                            <input type="checkbox" th:id="${'role_' + role}"
-                                   th:name="selectedRoles"
+                            <input type="radio" th:id="${'role_' + role}"
+                                   name="selectedRole"
                                    th:value="${role}"
-                                   th:checked="${role == 'SALESMAN'}">
+                                   th:checked="${role == 'SALESMAN'}"
+                                   required>
                             <label th:for="${'role_' + role}" th:text="${role}"></label>
                             <br>
                         </div>

@@ -14,4 +14,6 @@ public interface MechanicDAO {
     Optional<Mechanic> findByUserId(Integer userId);
 
     void save(Mechanic mechanic);
+
+    void deleteByUserId(Integer userId);
 }

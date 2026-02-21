@@ -14,7 +14,6 @@ import pl.zajavka.domain.exception.NotFoundException;
 import pl.zajavka.domain.exception.ProcessingException;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 @Service
@@ -38,7 +37,7 @@ public class UserManagementService {
     }
 
     @Transactional
-    public User createUser(User user, Set<String> roles) {
+    public User createUser(User user, String role, String name, String surname, String pesel) {
         if (userDAO.existsByUserName(user.getUserName())) {
             throw new ProcessingException("User with username [%s] already exists".formatted(user.getUserName()));
         }
@@ -51,9 +50,30 @@ public class UserManagementService {
         User userToSave = user
                 .withPassword(encodedPassword)
                 .withActive(true)
-                .withRoles(roles);
+                .withRoles(Set.of(role));
 
-        return userDAO.save(userToSave);
+        User savedUser = userDAO.save(userToSave);
+
+        // Create corresponding salesman or mechanic record
+        if ("SALESMAN".equals(role)) {
+            Salesman salesman = Salesman.builder()
+                    .name(name)
+                    .surname(surname)
+                    .pesel(pesel)
+                    .userId(savedUser.getId())
+                    .build();
+            salesmanDAO.save(salesman);
+        } else if ("MECHANIC".equals(role)) {
+            Mechanic mechanic = Mechanic.builder()
+                    .name(name)
+                    .surname(surname)
+                    .pesel(pesel)
+                    .userId(savedUser.getId())
+                    .build();
+            mechanicDAO.save(mechanic);
+        }
+
+        return savedUser;
     }
 
     @Transactional
@@ -69,19 +89,11 @@ public class UserManagementService {
             throw new ProcessingException("Cannot delete the admin user");
         }
 
-        // Unlink user from mechanic if exists
-        Optional<Mechanic> mechanic = mechanicDAO.findByUserId(userId);
-        mechanic.ifPresent(m -> {
-            Mechanic unlinkedMechanic = m.withUserId(null);
-            mechanicDAO.save(unlinkedMechanic);
-        });
+        // Delete mechanic record if exists
+        mechanicDAO.deleteByUserId(userId);
 
-        // Unlink user from salesman if exists
-        Optional<Salesman> salesman = salesmanDAO.findByUserId(userId);
-        salesman.ifPresent(s -> {
-            Salesman unlinkedSalesman = s.withUserId(null);
-            salesmanDAO.save(unlinkedSalesman);
-        });
+        // Delete salesman record if exists
+        salesmanDAO.deleteByUserId(userId);
 
         // HARD DELETE: Permanently delete the user from the database
         userDAO.deleteById(userId);

@@ -12,4 +12,6 @@ public interface MechanicJpaRepository extends JpaRepository<MechanicEntity, Int
     Optional<MechanicEntity> findByPesel(String pesel);
 
     Optional<MechanicEntity> findByUserId(Integer userId);
+
+    void deleteByUserId(Integer userId);
 }

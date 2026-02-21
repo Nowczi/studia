@@ -12,4 +12,6 @@ public interface SalesmanJpaRepository extends JpaRepository<SalesmanEntity, Int
     Optional<SalesmanEntity> findByPesel(String pesel);
 
     Optional<SalesmanEntity> findByUserId(Integer userId);
+
+    void deleteByUserId(Integer userId);
 }

@@ -14,4 +14,6 @@ public interface SalesmanDAO {
     Optional<Salesman> findByUserId(Integer userId);
 
     void save(Salesman salesman);
+
+    void deleteByUserId(Integer userId);
 }

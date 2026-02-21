@@ -43,4 +43,9 @@ public class SalesmanRepository implements SalesmanDAO {
         SalesmanEntity entity = salesmanEntityMapper.mapToEntity(salesman);
         salesmanJpaRepository.save(entity);
     }
+
+    @Override
+    public void deleteByUserId(Integer userId) {
+        salesmanJpaRepository.deleteByUserId(userId);
+    }
 }
