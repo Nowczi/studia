@@ -161,6 +161,7 @@ public class MechanicController {
         
         try {
             // Process each part if multiple parts are provided
+            boolean partsProcessed = false;
             if (dto.getParts() != null && !dto.getParts().isEmpty()) {
                 for (CarServiceMechanicProcessingUnitDTO.PartItemDTO partItem : dto.getParts()) {
                     if (partItem.getSerialNumber() != null && !partItem.getSerialNumber().isEmpty()) {
@@ -177,13 +178,17 @@ public class MechanicController {
                         
                         CarServiceProcessingRequest request = carServiceRequestMapper.map(partDto);
                         carServiceProcessingService.process(request);
+                        partsProcessed = true;
                     }
                 }
             }
             
-            // Process the main request (with done status)
-            CarServiceProcessingRequest mainRequest = carServiceRequestMapper.map(dto);
-            carServiceProcessingService.process(mainRequest);
+            // Only process the main request if no parts were processed
+            // This prevents duplicate service entries when parts are included
+            if (!partsProcessed) {
+                CarServiceProcessingRequest mainRequest = carServiceRequestMapper.map(dto);
+                carServiceProcessingService.process(mainRequest);
+            }
             
             if (Boolean.TRUE.equals(dto.getDone())) {
                 redirectAttributes.addFlashAttribute("successMessage", 
