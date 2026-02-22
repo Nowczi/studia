@@ -338,6 +338,9 @@
                                     <span th:unless="${user.active}">Activate</span>
                                 </button>
                             </form>
+                            <button type="button" class="btn btn-info btn-sm" data-bs-toggle="modal" th:data-bs-target="${'#resetPasswordModal' + user.id}">
+                                <i class="bi bi-key me-1"></i>Reset Password
+                            </button>
                             <form th:action="@{/admin/delete}" method="POST" style="display: inline;"
                                   onsubmit="return confirm('Are you sure you want to permanently DELETE this user? This action cannot be undone.');">
                                 <input type="hidden" th:name="userId" th:value="${user.id}">
@@ -349,6 +352,39 @@
                     </tr>
                 </tbody>
             </table>
+        </div>
+
+        <!-- Password Reset Modals -->
+        <div th:each="user : ${usersDTO.users}" class="modal fade" th:id="${'resetPasswordModal' + user.id}" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">
+                            <i class="bi bi-key-fill me-2 text-info"></i>Reset Password
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form th:action="@{/admin/reset-password}" method="POST">
+                        <div class="modal-body">
+                            <input type="hidden" name="userId" th:value="${user.id}">
+                            <p class="text-muted">Reset password for user: <strong th:text="${user.userName}"></strong></p>
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">New Password</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                                    <input type="password" name="newPassword" class="form-control form-control-modern" required minlength="5" placeholder="Enter new password (min 5 characters)">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-info">
+                                <i class="bi bi-check-lg me-1"></i>Reset Password
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </div>
     </div>
 

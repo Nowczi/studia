@@ -280,6 +280,36 @@
                         </tbody>
                     </table>
                 </div>
+
+                <!-- Pagination Controls -->
+                <div class="d-flex justify-content-between align-items-center mt-4" th:if="${totalPages > 1}">
+                    <div class="text-muted">
+                        Showing <span th:text="${currentPage * carsPerPage + 1}"></span> - 
+                        <span th:text="${T(java.lang.Math).min((currentPage + 1) * carsPerPage, totalCars)}"></span> 
+                        of <span th:text="${totalCars}"></span> cars
+                    </div>
+                    <nav aria-label="Car pagination">
+                        <ul class="pagination mb-0">
+                            <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled' : ''">
+                                <a class="page-link" th:href="@{/purchase(page=${currentPage - 1}, brand=${carSearchDTO.brand}, model=${carSearchDTO.model}, yearFrom=${carSearchDTO.yearFrom}, yearTo=${carSearchDTO.yearTo}, color=${carSearchDTO.color}, priceFrom=${carSearchDTO.priceFrom}, priceTo=${carSearchDTO.priceTo})}" aria-label="Previous">
+                                    <span aria-hidden="true"><i class="bi bi-chevron-left"></i> Previous</span>
+                                </a>
+                            </li>
+                            <li class="page-item disabled">
+                                <span class="page-link">Page <span th:text="${currentPage + 1}"></span> of <span th:text="${totalPages}"></span></span>
+                            </li>
+                            <li class="page-item" th:classappend="${currentPage + 1 >= totalPages} ? 'disabled' : ''">
+                                <a class="page-link" th:href="@{/purchase(page=${currentPage + 1}, brand=${carSearchDTO.brand}, model=${carSearchDTO.model}, yearFrom=${carSearchDTO.yearFrom}, yearTo=${carSearchDTO.yearTo}, color=${carSearchDTO.color}, priceFrom=${carSearchDTO.priceFrom}, priceTo=${carSearchDTO.priceTo})}" aria-label="Next">
+                                    <span aria-hidden="true">Next <i class="bi bi-chevron-right"></i></span>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+                <div class="text-muted mt-3" th:if="${totalPages <= 1 && totalCars > 0}">
+                    Showing <span th:text="${totalCars}"></span> car<span th:if="${totalCars != 1}">s</span>
+                </div>
+
                 <div th:if="${availableCarDTOs.isEmpty()}" class="alert alert-info mt-3">
                     <i class="bi bi-info-circle me-2"></i>No cars found matching your search criteria.
                 </div>

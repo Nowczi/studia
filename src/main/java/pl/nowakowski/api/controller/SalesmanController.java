@@ -7,11 +7,14 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import pl.nowakowski.api.dto.CarToBuyDTO;
 import pl.nowakowski.api.dto.mapper.CarMapper;
 import pl.nowakowski.business.CarPurchaseService;
 import pl.nowakowski.business.CarService;
+
+import java.util.List;
 
 @Controller
 @RequiredArgsConstructor
@@ -19,18 +22,36 @@ public class SalesmanController {
 
     private static final String SALESMAN = "/salesman";
     private static final String SALESMAN_CAR_ADD = "/salesman/car/add";
+    private static final int CARS_PER_PAGE = 10;
 
     private final CarPurchaseService carPurchaseService;
     private final CarService carService;
     private final CarMapper carMapper;
 
     @GetMapping(value = SALESMAN)
-    public String homePage(Model model) {
-        var availableCars = carPurchaseService.availableCars().stream()
+    public String homePage(@RequestParam(required = false, defaultValue = "0") int page, Model model) {
+        var allAvailableCars = carPurchaseService.availableCars().stream()
             .map(carMapper::map)
             .toList();
 
-        model.addAttribute("availableCarDTOs", availableCars);
+        // Pagination logic
+        int totalCars = allAvailableCars.size();
+        int totalPages = (int) Math.ceil((double) totalCars / CARS_PER_PAGE);
+        
+        // Ensure page is within valid range
+        if (page < 0) page = 0;
+        if (totalPages > 0 && page >= totalPages) page = totalPages - 1;
+        
+        // Get cars for current page
+        int fromIndex = page * CARS_PER_PAGE;
+        int toIndex = Math.min(fromIndex + CARS_PER_PAGE, totalCars);
+        List<CarToBuyDTO> paginatedCars = allAvailableCars.subList(fromIndex, toIndex);
+
+        model.addAttribute("availableCarDTOs", paginatedCars);
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", totalPages);
+        model.addAttribute("totalCars", totalCars);
+        model.addAttribute("carsPerPage", CARS_PER_PAGE);
 
         return "salesman_portal";
     }
