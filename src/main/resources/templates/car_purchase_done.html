@@ -130,15 +130,15 @@
             color: white;
         }
     </style>
-    <title>Purchase Complete - Zajavka Car Dealer</title>
+    <title>Purchase Complete - Nowakowski Car Dealer</title>
 </head>
 
 <body>
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-custom">
         <div class="container">
-            <a class="navbar-brand" href="/">
-                <i class="bi bi-car-front-fill me-2"></i>Zajavka Car Dealer
+            <span class="navbar-brand">
+                <i class="bi bi-car-front-fill me-2"></i>Nowakowski Car Dealer
             </a>
             <div class="d-flex align-items-center gap-3">
                 <a sec:authorize="hasAuthority('ADMIN')" th:href="@{/}" class="btn btn-light btn-sm">
@@ -165,7 +165,7 @@
                     <span th:if="${customerSurname}" th:text="${customerSurname}">SURNAME</span>
                     <span th:if="${existingCustomerEmail}" th:text="${existingCustomerEmail}">EMAIL</span>
                 </b>!
-                <br>Thank you for your trust in Zajavka Car Dealer!
+                <br>Thank you for your trust in Nowakowski Car Dealer!
             </p>
             <div class="invoice-box">
                 <p class="mb-1 text-muted">Your Invoice Number</p>

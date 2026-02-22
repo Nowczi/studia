@@ -5,7 +5,7 @@ plugins {
     id "org.openapi.generator" version "${openapiGeneratorVersion}"
 }
 
-group = 'pl.zajavka'
+group = 'pl.nowakowski'
 version = '1.0'
 sourceCompatibility = '17'
 
@@ -87,8 +87,8 @@ openApiGenerate {
     ]
     outputDir = "$buildDir/generated-sources/openapi".toString()
     inputSpec = "$rootDir/src/main/resources/contracts/cepik-1.1.3.json".toString()
-    apiPackage = "pl.zajavka.infrastructure.cepik.api"
-    modelPackage = "pl.zajavka.infrastructure.cepik.model"
+    apiPackage = "pl.nowakowski.infrastructure.cepik.api"
+    modelPackage = "pl.nowakowski.infrastructure.cepik.model"
 }
 
 sourceSets {

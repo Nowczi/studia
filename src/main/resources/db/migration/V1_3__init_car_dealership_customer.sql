@@ -4,7 +4,7 @@ CREATE TABLE customer
     name        VARCHAR(32) NOT NULL,
     surname     VARCHAR(32) NOT NULL,
     phone       VARCHAR(32) NOT NULL,
-    email       VARCHAR(32) NOT NULL,
+    email       VARCHAR(64) NOT NULL,
     address_id  INT         NOT NULL,
     PRIMARY KEY (customer_id),
     UNIQUE (email),

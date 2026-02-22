@@ -1,0 +1,147 @@
+package pl.nowakowski.api.controller;
+
+import jakarta.validation.Valid;
+import lombok.AllArgsConstructor;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import pl.nowakowski.api.dto.UserDTO;
+import pl.nowakowski.api.dto.UsersDTO;
+import pl.nowakowski.api.dto.mapper.UserMapper;
+import pl.nowakowski.business.UserManagementService;
+import pl.nowakowski.domain.User;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+@Controller
+@AllArgsConstructor
+public class AdminController {
+
+    public static final String ADMIN = "/admin";
+    public static final String ADMIN_CREATE_USER = "/admin/create";
+    public static final String ADMIN_DELETE_USER = "/admin/delete";
+    public static final String ADMIN_TOGGLE_USER = "/admin/toggle";
+    public static final String ADMIN_RESET_PASSWORD = "/admin/reset-password";
+
+    private final UserManagementService userManagementService;
+    private final UserMapper userMapper;
+
+    @GetMapping(value = ADMIN)
+    public ModelAndView adminPortal() {
+        Map<String, ?> model = prepareAdminData();
+        return new ModelAndView("admin_portal", model);
+    }
+
+    private Map<String, ?> prepareAdminData() {
+        List<UserDTO> users = userManagementService.findAllUsers().stream()
+                .map(userMapper::map)
+                .toList();
+
+        Set<String> availableRoles = userManagementService.getAvailableRoles();
+
+        return Map.of(
+                "usersDTO", UsersDTO.builder().users(users).build(),
+                "availableRoles", availableRoles,
+                "newUserDTO", UserDTO.buildDefault()
+        );
+    }
+
+    @PostMapping(value = ADMIN_CREATE_USER)
+    public String createUser(
+            @Valid @ModelAttribute("newUserDTO") UserDTO userDTO,
+            @RequestParam("selectedRole") String selectedRole,
+            @RequestParam("name") String name,
+            @RequestParam("surname") String surname,
+            @RequestParam("pesel") String pesel,
+            BindingResult bindingResult,
+            RedirectAttributes redirectAttributes,
+            Model model
+    ) {
+        if (bindingResult.hasErrors()) {
+            model.addAllAttributes(prepareAdminData());
+            model.addAttribute("errorMessage", "Validation errors occurred");
+            return "admin_portal";
+        }
+
+        if (selectedRole == null || selectedRole.isEmpty()) {
+            model.addAllAttributes(prepareAdminData());
+            model.addAttribute("errorMessage", "Role must be selected");
+            return "admin_portal";
+        }
+
+        // Validate PESEL format
+        if (!pesel.matches("^[0-9]{2}([02468]1|[13579][012])(0[1-9]|1[0-9]|2[0-9]|3[01])[0-9]{5}$")) {
+            model.addAllAttributes(prepareAdminData());
+            model.addAttribute("errorMessage", "PESEL must be a valid 11-digit Polish identification number");
+            return "admin_portal";
+        }
+
+        try {
+            User user = userMapper.map(userDTO);
+            userManagementService.createUser(user, selectedRole, name, surname, pesel);
+            redirectAttributes.addFlashAttribute("successMessage", "User created successfully");
+            return "redirect:/admin";
+        } catch (Exception e) {
+            model.addAllAttributes(prepareAdminData());
+            model.addAttribute("errorMessage", e.getMessage());
+            return "admin_portal";
+        }
+    }
+
+    @PostMapping(value = ADMIN_DELETE_USER)
+    public String deleteUser(
+            @RequestParam("userId") Integer userId,
+            RedirectAttributes redirectAttributes
+    ) {
+        try {
+            userManagementService.deleteUser(userId);
+            redirectAttributes.addFlashAttribute("successMessage", "User deleted successfully");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Cannot delete user: " + e.getMessage());
+        }
+        return "redirect:/admin";
+    }
+
+    @PostMapping(value = ADMIN_TOGGLE_USER)
+    public String toggleUserActive(
+            @RequestParam("userId") Integer userId,
+            RedirectAttributes redirectAttributes
+    ) {
+        try {
+            userManagementService.toggleUserActive(userId);
+            redirectAttributes.addFlashAttribute("successMessage", "User status updated successfully");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Cannot toggle user: " + e.getMessage());
+        }
+        return "redirect:/admin";
+    }
+
+    @PostMapping(value = ADMIN_RESET_PASSWORD)
+    public String resetUserPassword(
+            @RequestParam("userId") Integer userId,
+            @RequestParam("newPassword") String newPassword,
+            RedirectAttributes redirectAttributes
+    ) {
+        try {
+            // Validate password length
+            if (newPassword == null || newPassword.length() < 5) {
+                redirectAttributes.addFlashAttribute("errorMessage", "Password must be at least 5 characters long");
+                return "redirect:/admin";
+            }
+
+            userManagementService.resetUserPassword(userId, newPassword);
+            redirectAttributes.addFlashAttribute("successMessage", "Password reset successfully");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Cannot reset password: " + e.getMessage());
+        }
+        return "redirect:/admin";
+    }
+}
