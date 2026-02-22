@@ -48,6 +48,20 @@ public class CarServiceProcessingService {
         }
     }
 
+    /**
+     * Marks a service request as completed WITHOUT creating an additional service_mechanic entry.
+     * This method should be called when work has already been recorded (e.g., via process() for parts)
+     * and we just need to mark the service request as done.
+     *
+     * @param carVin the VIN of the car whose active service request should be marked as completed
+     */
+    @Transactional
+    public void completeServiceRequest(String carVin) {
+        CarServiceRequest serviceRequest = carServiceRequestService.findAnyActiveServiceRequest(carVin);
+        serviceRequest = serviceRequest.withCompletedDateTime(OffsetDateTime.now(ZoneId.of("Europe/Warsaw")));
+        serviceRequestProcessingDAO.markServiceRequestAsCompleted(serviceRequest);
+    }
+
     private ServiceMechanic buildServiceMechanic(
         CarServiceProcessingRequest request,
         Mechanic mechanic,

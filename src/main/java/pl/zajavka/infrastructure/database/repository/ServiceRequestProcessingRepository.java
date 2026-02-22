@@ -62,4 +62,18 @@ public class ServiceRequestProcessingRepository implements ServiceRequestProcess
         servicePartJpaRepository.saveAndFlush(servicePartEntity);
         process(serviceRequest, serviceMechanic);
     }
+
+    @Override
+    @Transactional
+    public void markServiceRequestAsCompleted(CarServiceRequest serviceRequest) {
+        // Only update the service request's completedDateTime
+        // Do NOT create any service_mechanic or service_part entries
+        if (Objects.nonNull(serviceRequest.getCompletedDateTime())) {
+            CarServiceRequestEntity carServiceRequestEntity = carServiceRequestJpaRepository
+                .findById(serviceRequest.getCarServiceRequestId())
+                .orElseThrow();
+            carServiceRequestEntity.setCompletedDateTime(serviceRequest.getCompletedDateTime());
+            carServiceRequestJpaRepository.saveAndFlush(carServiceRequestEntity);
+        }
+    }
 }

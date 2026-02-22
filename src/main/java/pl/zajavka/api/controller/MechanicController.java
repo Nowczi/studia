@@ -173,7 +173,7 @@ public class MechanicController {
                             .serviceCode(dto.getServiceCode())
                             .hours(dto.getHours())
                             .mechanicComment(dto.getMechanicComment())
-                            .done(false) // Only mark as done on the last part
+                            .done(false) // Parts are processed without marking done
                             .build();
                         
                         CarServiceProcessingRequest request = carServiceRequestMapper.map(partDto);
@@ -188,6 +188,10 @@ public class MechanicController {
             if (!partsProcessed) {
                 CarServiceProcessingRequest mainRequest = carServiceRequestMapper.map(dto);
                 carServiceProcessingService.process(mainRequest);
+            } else if (Boolean.TRUE.equals(dto.getDone())) {
+                // If parts were processed AND done is checked, mark the service request as completed
+                // WITHOUT creating an additional service_mechanic entry
+                carServiceProcessingService.completeServiceRequest(dto.getCarVin());
             }
             
             if (Boolean.TRUE.equals(dto.getDone())) {
