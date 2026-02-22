@@ -46,6 +46,15 @@ public class SalesmanController {
         @Valid @ModelAttribute("carToBuyDTO") CarToBuyDTO carToBuyDTO,
         RedirectAttributes redirectAttributes
     ) {
+        // Validate VIN format
+        String vin = carToBuyDTO.getVin();
+        if (vin == null || !vin.matches("^[A-HJ-NPR-Z0-9]{17}$")) {
+            redirectAttributes.addFlashAttribute("errorMessage", 
+                "Invalid VIN format! VIN must be exactly 17 characters containing only capital letters (excluding I, O, Q) and digits. " +
+                "Please correct the VIN and try again. Example of valid VIN: 1FT7X2B60FEA74019");
+            return "redirect:/salesman/car/add";
+        }
+
         try {
             // Check if car with same VIN already exists
             var existingCar = carService.findOptionalCarToBuy(carToBuyDTO.getVin());

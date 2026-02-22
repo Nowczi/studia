@@ -162,6 +162,20 @@
     </div>
 
     <div class="container pb-5">
+        <!-- Success Message -->
+        <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show mb-4" role="alert" style="border-radius: 0.75rem; border: none;">
+            <i class="bi bi-check-circle-fill me-2"></i>
+            <strong>Success:</strong> <span th:text="${successMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+
+        <!-- Error Message -->
+        <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show mb-4" role="alert" style="border-radius: 0.75rem; border: none;">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            <strong>Error:</strong> <span th:text="${errorMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+
         <!-- Service Requests Table -->
         <div class="card card-modern">
             <div class="card-body p-4">

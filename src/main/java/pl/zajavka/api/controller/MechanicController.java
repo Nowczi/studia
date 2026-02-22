@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import pl.zajavka.api.dto.CarServiceMechanicProcessingUnitDTO;
 import pl.zajavka.api.dto.CarServiceRequestDTO;
 import pl.zajavka.api.dto.MechanicDTO;
@@ -25,6 +26,7 @@ import pl.zajavka.business.PartCatalogService;
 import pl.zajavka.business.ServiceCatalogService;
 import pl.zajavka.business.dao.MechanicDAO;
 import pl.zajavka.domain.CarServiceProcessingRequest;
+import pl.zajavka.domain.CarServiceRequest;
 import pl.zajavka.domain.Mechanic;
 import pl.zajavka.domain.Part;
 import pl.zajavka.infrastructure.security.UserEntity;
@@ -34,6 +36,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Controller
 @AllArgsConstructor
@@ -96,7 +99,11 @@ public class MechanicController {
             .findFirst()
             .orElse(null);
         
+        // Get completed work for this service request
+        List<CompletedWorkDTO> completedWork = getCompletedWorkForRequest(serviceRequestNumber);
+        
         data.put("serviceRequest", serviceRequest);
+        data.put("completedWork", completedWork);
         data.put("carServiceProcessDTO", CarServiceMechanicProcessingUnitDTO.buildDefault());
         
         return new ModelAndView("mechanic_work_unit", data);
@@ -106,7 +113,6 @@ public class MechanicController {
         var availableServiceRequests = getAvailableServiceRequests();
         var availableCarVins = availableServiceRequests.stream().map(CarServiceRequestDTO::getCarVin).toList();
         var availableMechanics = getAvailableMechanics();
-        var availableMechanicPesels = availableMechanics.stream().map(MechanicDTO::getPesel).toList();
         var parts = findParts();
         var services = findServices();
         var partSerialNumbers = preparePartSerialNumbers(parts);
@@ -116,7 +122,6 @@ public class MechanicController {
             "availableServiceRequestDTOs", availableServiceRequests,
             "availableCarVins", availableCarVins,
             "availableMechanicDTOs", availableMechanics,
-            "availableMechanicPesels", availableMechanicPesels,
             "partDTOs", parts,
             "partSerialNumbers", partSerialNumbers,
             "serviceDTOs", services,
@@ -128,15 +133,47 @@ public class MechanicController {
     @PostMapping(value = MECHANIC_WORK_UNIT)
     public String mechanicWorkUnit(
         @Valid @ModelAttribute("carServiceRequestProcessDTO") CarServiceMechanicProcessingUnitDTO dto,
-        ModelMap modelMap
+        ModelMap modelMap,
+        RedirectAttributes redirectAttributes
     ) {
-
-        CarServiceProcessingRequest request = carServiceRequestMapper.map(dto);
-        carServiceProcessingService.process(request);
-        if (dto.getDone()) {
-            return "mechanic_service_done";
-        } else {
-            modelMap.addAllAttributes(prepareNecessaryData());
+        try {
+            // Process each part if multiple parts are provided
+            if (dto.getParts() != null && !dto.getParts().isEmpty()) {
+                for (CarServiceMechanicProcessingUnitDTO.PartItemDTO partItem : dto.getParts()) {
+                    if (partItem.getSerialNumber() != null && !partItem.getSerialNumber().isEmpty()) {
+                        CarServiceMechanicProcessingUnitDTO partDto = CarServiceMechanicProcessingUnitDTO.builder()
+                            .mechanicPesel(dto.getMechanicPesel())
+                            .carVin(dto.getCarVin())
+                            .partSerialNumber(partItem.getSerialNumber())
+                            .partQuantity(partItem.getQuantity())
+                            .serviceCode(dto.getServiceCode())
+                            .hours(dto.getHours())
+                            .mechanicComment(dto.getMechanicComment())
+                            .done(false) // Only mark as done on the last part
+                            .build();
+                        
+                        CarServiceProcessingRequest request = carServiceRequestMapper.map(partDto);
+                        carServiceProcessingService.process(request);
+                    }
+                }
+            }
+            
+            // Process the main request (with done status)
+            CarServiceProcessingRequest mainRequest = carServiceRequestMapper.map(dto);
+            carServiceProcessingService.process(mainRequest);
+            
+            if (Boolean.TRUE.equals(dto.getDone())) {
+                redirectAttributes.addFlashAttribute("successMessage", 
+                    "Work completed successfully! Service request has been marked as done.");
+            } else {
+                redirectAttributes.addFlashAttribute("successMessage", 
+                    "Work saved successfully! You can continue working on this request.");
+            }
+            
+            return "redirect:/mechanic";
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", 
+                "Error saving work: " + e.getMessage());
             return "redirect:/mechanic";
         }
     }
@@ -171,5 +208,70 @@ public class MechanicController {
             .toList());
         partSerialNumbers.add(Part.NONE);
         return partSerialNumbers;
+    }
+    
+    private List<CompletedWorkDTO> getCompletedWorkForRequest(String serviceRequestNumber) {
+        // Get the service request to find its car VIN
+        var serviceRequestOpt = carServiceRequestService.availableServiceRequests().stream()
+            .filter(req -> req.getCarServiceRequestNumber().equals(serviceRequestNumber))
+            .findFirst();
+        
+        if (serviceRequestOpt.isEmpty()) {
+            return new ArrayList<>();
+        }
+        
+        CarServiceRequest request = serviceRequestOpt.get();
+        List<CompletedWorkDTO> completedWork = new ArrayList<>();
+        
+        // Get service mechanics (work done)
+        if (request.getServiceMechanics() != null) {
+            for (var serviceMechanic : request.getServiceMechanics()) {
+                CompletedWorkDTO work = new CompletedWorkDTO();
+                work.setMechanicName(serviceMechanic.getMechanic() != null ? 
+                    serviceMechanic.getMechanic().getName() + " " + serviceMechanic.getMechanic().getSurname() : "Unknown");
+                work.setServiceName(serviceMechanic.getService() != null ? 
+                    serviceMechanic.getService().getDescription() : "Unknown Service");
+                work.setHours(serviceMechanic.getHours());
+                work.setComment(serviceMechanic.getComment());
+                completedWork.add(work);
+            }
+        }
+        
+        // Get service parts (parts used)
+        if (request.getServiceParts() != null) {
+            for (var servicePart : request.getServiceParts()) {
+                CompletedWorkDTO work = new CompletedWorkDTO();
+                work.setPartName(servicePart.getPart() != null ? 
+                    servicePart.getPart().getDescription() : "Unknown Part");
+                work.setPartQuantity(servicePart.getQuantity());
+                completedWork.add(work);
+            }
+        }
+        
+        return completedWork;
+    }
+    
+    // Inner DTO for completed work display
+    public static class CompletedWorkDTO {
+        private String mechanicName;
+        private String serviceName;
+        private Integer hours;
+        private String comment;
+        private String partName;
+        private Integer partQuantity;
+        
+        // Getters and setters
+        public String getMechanicName() { return mechanicName; }
+        public void setMechanicName(String mechanicName) { this.mechanicName = mechanicName; }
+        public String getServiceName() { return serviceName; }
+        public void setServiceName(String serviceName) { this.serviceName = serviceName; }
+        public Integer getHours() { return hours; }
+        public void setHours(Integer hours) { this.hours = hours; }
+        public String getComment() { return comment; }
+        public void setComment(String comment) { this.comment = comment; }
+        public String getPartName() { return partName; }
+        public void setPartName(String partName) { this.partName = partName; }
+        public Integer getPartQuantity() { return partQuantity; }
+        public void setPartQuantity(Integer partQuantity) { this.partQuantity = partQuantity; }
     }
 }

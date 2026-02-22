@@ -76,6 +76,13 @@ public class AdminController {
             return "admin_portal";
         }
 
+        // Validate PESEL format
+        if (!pesel.matches("^[0-9]{2}([02468]1|[13579][012])(0[1-9]|1[0-9]|2[0-9]|3[01])[0-9]{5}$")) {
+            model.addAllAttributes(prepareAdminData());
+            model.addAttribute("errorMessage", "PESEL must be a valid 11-digit Polish identification number");
+            return "admin_portal";
+        }
+
         try {
             User user = userMapper.map(userDTO);
             userManagementService.createUser(user, selectedRole, name, surname, pesel);

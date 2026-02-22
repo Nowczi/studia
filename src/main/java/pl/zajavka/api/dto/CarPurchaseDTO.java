@@ -38,6 +38,7 @@ public class CarPurchaseDTO {
     private String customerAddressPostalCode;
     private String customerAddressStreet;
 
+    @Pattern(regexp = "^[A-HJ-NPR-Z0-9]{17}$", message = "VIN must be exactly 17 characters containing only capital letters (excluding I, O, Q) and digits")
     private String carVin;
     private String salesmanPesel;
 
