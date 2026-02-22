@@ -1,5 +1,6 @@
 <!DOCTYPE HTML>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
@@ -18,10 +19,15 @@
 
 <div class="container">
     <div class="row mt-3">
-        <div class="col-md-4">
-            <a th:href="@{/}" class="btn btn-info" role="button">Go back to the main page</a>
+        <div class="col-md-3">
+            <button onclick="history.back()" class="btn btn-secondary" role="button">Go back</button>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-3">
+            <a sec:authorize="hasAuthority('SALESMAN')" th:href="@{/salesman}" class="btn btn-info" role="button">Go back to the main page</a>
+            <a sec:authorize="hasAuthority('MECHANIC')" th:href="@{/mechanic}" class="btn btn-info" role="button">Go back to the main page</a>
+            <a sec:authorize="hasAuthority('ADMIN')" th:href="@{/}" class="btn btn-info" role="button">Go back to the main page</a>
+        </div>
+        <div class="col-md-3">
             <form th:action="@{/logout}" method="POST">
                 <button type="submit" class="btn btn-danger">Logout</button>
             </form>
