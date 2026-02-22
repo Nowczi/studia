@@ -343,7 +343,7 @@
                 <h4 class="mb-4"><i class="bi bi-gear-wide-connected text-success me-2"></i>Record Work</h4>
 
                 <form th:action="@{/mechanic/workUnit}" method="POST" th:object="${carServiceProcessDTO}">
-                    <input type="hidden" th:field="*{carVin}" th:value="${serviceRequest != null ? serviceRequest.carVin : ''}" />
+                    <input type="hidden" th:field="*{carVin}" />
 
                     <div class="row">
                         <!-- Mechanic Selection -->
@@ -353,7 +353,7 @@
                                 <option value="">-- Select Mechanic --</option>
                                 <option th:each="mechanic : ${availableMechanicDTOs}"
                                         th:value="${mechanic.pesel}"
-                                        th:text="${mechanic.name} + ' ' + ${mechanic.surname} + ' (' + ${mechanic.pesel} + ')'"></option>
+                                        th:text="${mechanic.name} + ' ' + ${mechanic.surname}"></option>
                             </select>
                         </div>
 

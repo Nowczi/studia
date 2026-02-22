@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
 
@@ -35,7 +36,25 @@ public class CarHistoryDTO {
         private String receivedDateTime;
         private String completedDateTime;
         private String customerComment;
-        private List<ServiceDTO> services;
+        // Changed from services to serviceWorks to include mechanic details
+        private List<ServiceWorkDTO> serviceWorks;
         private List<PartDTO> parts;
+    }
+    
+    /**
+     * DTO for service work performed by a mechanic, including their comment and hours.
+     */
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class ServiceWorkDTO {
+        private String serviceCode;
+        private String description;
+        private BigDecimal price;
+        private String mechanicName;
+        private String mechanicSurname;
+        private Integer hours;
+        private String mechanicComment;
     }
 }

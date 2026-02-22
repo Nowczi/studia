@@ -6,10 +6,12 @@ import org.mapstruct.ReportingPolicy;
 import pl.zajavka.domain.CarHistory;
 import pl.zajavka.domain.CarToService;
 import pl.zajavka.domain.Part;
-import pl.zajavka.domain.Service;
 import pl.zajavka.infrastructure.database.entity.CarToServiceEntity;
 import pl.zajavka.infrastructure.database.entity.ServiceMechanicEntity;
 import pl.zajavka.infrastructure.database.entity.ServicePartEntity;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface CarToServiceEntityMapper {
@@ -26,14 +28,19 @@ public interface CarToServiceEntityMapper {
                     .receivedDateTime(request.getReceivedDateTime())
                     .completedDateTime(request.getCompletedDateTime())
                     .customerComment(request.getCustomerComment())
-                    .services(request.getServiceMechanics().stream()
-                        .map(ServiceMechanicEntity::getService)
-                        .map(service -> Service.builder()
-                            .serviceCode(service.getServiceCode())
-                            .description(service.getDescription())
-                            .price(service.getPrice())
+                    // Map each ServiceMechanicEntity to ServiceWork to show mechanic details
+                    // This avoids duplication since each entry represents unique work by a mechanic
+                    .serviceWorks(request.getServiceMechanics().stream()
+                        .map(sm -> CarHistory.ServiceWork.builder()
+                            .serviceCode(sm.getService().getServiceCode())
+                            .description(sm.getService().getDescription())
+                            .price(sm.getService().getPrice())
+                            .mechanicName(sm.getMechanic() != null ? sm.getMechanic().getName() : "Unknown")
+                            .mechanicSurname(sm.getMechanic() != null ? sm.getMechanic().getSurname() : "")
+                            .hours(sm.getHours())
+                            .mechanicComment(sm.getComment())
                             .build())
-                        .toList())
+                        .collect(Collectors.toList()))
                     .parts(request.getServiceParts().stream()
                         .map(ServicePartEntity::getPart)
                         .map(service -> Part.builder()
@@ -41,9 +48,9 @@ public interface CarToServiceEntityMapper {
                             .description(service.getDescription())
                             .price(service.getPrice())
                             .build())
-                        .toList())
+                        .collect(Collectors.toList()))
                     .build())
-                .toList())
+                .collect(Collectors.toList()))
             .build();
     }
 

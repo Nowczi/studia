@@ -8,6 +8,7 @@ import pl.zajavka.infrastructure.database.repository.jpa.CarServiceRequestJpaRep
 import pl.zajavka.infrastructure.database.repository.mapper.CarServiceRequestEntityMapper;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -30,5 +31,11 @@ public class CarServiceRequestRepository implements CarServiceRequestDAO {
         return carServiceRequestJpaRepository.findActiveServiceRequestsByCarVin(carVin).stream()
             .map(carServiceRequestEntityMapper::mapFromEntity)
             .collect(Collectors.toSet());
+    }
+    
+    @Override
+    public Optional<CarServiceRequest> findByServiceRequestNumberWithDetails(String serviceRequestNumber) {
+        return carServiceRequestJpaRepository.findByCarServiceRequestNumber(serviceRequestNumber)
+            .map(carServiceRequestEntityMapper::mapFromEntityWithDetails);
     }
 }

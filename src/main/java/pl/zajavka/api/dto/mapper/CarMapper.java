@@ -37,5 +37,19 @@ public interface CarMapper extends OffsetDateTimeMapper {
 
     @Mapping(source = "receivedDateTime", target = "receivedDateTime", qualifiedByName = "mapOffsetDateTimeToString")
     @Mapping(source = "completedDateTime", target = "completedDateTime", qualifiedByName = "mapOffsetDateTimeToString")
+    @Mapping(source = "serviceWorks", target = "serviceWorks", qualifiedByName = "mapServiceWorks")
     CarHistoryDTO.ServiceRequestDTO mapServiceRequest(CarHistory.CarServiceRequest carServiceRequest);
+    
+    @SuppressWarnings("unused")
+    @Named("mapServiceWorks")
+    default List<CarHistoryDTO.ServiceWorkDTO> mapServiceWorks(
+        List<CarHistory.ServiceWork> serviceWorks
+    ) {
+        if (serviceWorks == null) {
+            return null;
+        }
+        return serviceWorks.stream().map(this::mapServiceWork).toList();
+    }
+    
+    CarHistoryDTO.ServiceWorkDTO mapServiceWork(CarHistory.ServiceWork serviceWork);
 }

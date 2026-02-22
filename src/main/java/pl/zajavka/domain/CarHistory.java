@@ -23,8 +23,25 @@ public class CarHistory {
         OffsetDateTime receivedDateTime;
         OffsetDateTime completedDateTime;
         String customerComment;
-        List<Service> services;
+        // Changed from List<Service> to List<ServiceWork> to include mechanic details
+        List<ServiceWork> serviceWorks;
         List<Part> parts;
+    }
+    
+    /**
+     * Represents a service performed by a mechanic, including their comment and hours.
+     * This replaces the simple Service list to avoid duplication and show mechanic details.
+     */
+    @Value
+    @Builder
+    public static class ServiceWork {
+        String serviceCode;
+        String description;
+        java.math.BigDecimal price;
+        String mechanicName;
+        String mechanicSurname;
+        Integer hours;
+        String mechanicComment;
     }
 
 }

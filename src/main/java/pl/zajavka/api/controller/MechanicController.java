@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -93,20 +94,31 @@ public class MechanicController {
     public ModelAndView mechanicWorkPage(@PathVariable String serviceRequestNumber) {
         Map<String, Object> data = new HashMap<>(prepareNecessaryData());
         
-        // Find the specific service request
-        var serviceRequest = getAvailableServiceRequests().stream()
-            .filter(req -> req.getCarServiceRequestNumber().equals(serviceRequestNumber))
-            .findFirst()
+        // Find the specific service request WITH DETAILS (including service mechanics and parts)
+        CarServiceRequest serviceRequest = carServiceRequestService
+            .findServiceRequestByNumberWithDetails(serviceRequestNumber)
             .orElse(null);
         
         // Get completed work for this service request
-        List<CompletedWorkDTO> completedWork = getCompletedWorkForRequest(serviceRequestNumber);
+        List<CompletedWorkDTO> completedWork = getCompletedWorkForRequest(serviceRequest);
         
-        data.put("serviceRequest", serviceRequest);
+        // Build default DTO with carVin pre-populated from service request
+        CarServiceMechanicProcessingUnitDTO dto = CarServiceMechanicProcessingUnitDTO.buildDefault();
+        if (serviceRequest != null) {
+            dto.setCarVin(serviceRequest.getCar() != null ? serviceRequest.getCar().getVin() : null);
+        }
+        
+        data.put("serviceRequest", serviceRequest != null ? carServiceRequestMapper.map(serviceRequest) : null);
         data.put("completedWork", completedWork);
-        data.put("carServiceProcessDTO", CarServiceMechanicProcessingUnitDTO.buildDefault());
+        data.put("carServiceProcessDTO", dto);
         
         return new ModelAndView("mechanic_work_unit", data);
+    }
+
+    // GET endpoint for workUnit - handles validation failures by redirecting to mechanic page
+    @GetMapping(value = MECHANIC_WORK_UNIT)
+    public String mechanicWorkUnitGet() {
+        return "redirect:/mechanic";
     }
 
     private Map<String, ?> prepareNecessaryData() {
@@ -133,9 +145,20 @@ public class MechanicController {
     @PostMapping(value = MECHANIC_WORK_UNIT)
     public String mechanicWorkUnit(
         @Valid @ModelAttribute("carServiceRequestProcessDTO") CarServiceMechanicProcessingUnitDTO dto,
+        BindingResult bindingResult,
         ModelMap modelMap,
         RedirectAttributes redirectAttributes
     ) {
+        // If there are validation errors, redirect with error message
+        if (bindingResult.hasErrors()) {
+            String errorMessage = bindingResult.getFieldErrors().stream()
+                .map(error -> error.getField() + ": " + error.getDefaultMessage())
+                .collect(Collectors.joining(", "));
+            redirectAttributes.addFlashAttribute("errorMessage", 
+                "Validation error: " + errorMessage);
+            return "redirect:/mechanic";
+        }
+        
         try {
             // Process each part if multiple parts are provided
             if (dto.getParts() != null && !dto.getParts().isEmpty()) {
@@ -210,17 +233,15 @@ public class MechanicController {
         return partSerialNumbers;
     }
     
-    private List<CompletedWorkDTO> getCompletedWorkForRequest(String serviceRequestNumber) {
-        // Get the service request to find its car VIN
-        var serviceRequestOpt = carServiceRequestService.availableServiceRequests().stream()
-            .filter(req -> req.getCarServiceRequestNumber().equals(serviceRequestNumber))
-            .findFirst();
-        
-        if (serviceRequestOpt.isEmpty()) {
+    /**
+     * Gets completed work for a service request by extracting service mechanics and parts.
+     * This method now receives the full CarServiceRequest domain object with all details.
+     */
+    private List<CompletedWorkDTO> getCompletedWorkForRequest(CarServiceRequest request) {
+        if (request == null) {
             return new ArrayList<>();
         }
         
-        CarServiceRequest request = serviceRequestOpt.get();
         List<CompletedWorkDTO> completedWork = new ArrayList<>();
         
         // Get service mechanics (work done)
@@ -241,9 +262,11 @@ public class MechanicController {
         if (request.getServiceParts() != null) {
             for (var servicePart : request.getServiceParts()) {
                 CompletedWorkDTO work = new CompletedWorkDTO();
+                work.setMechanicName("-");
                 work.setPartName(servicePart.getPart() != null ? 
                     servicePart.getPart().getDescription() : "Unknown Part");
                 work.setPartQuantity(servicePart.getQuantity());
+                work.setComment("-");
                 completedWork.add(work);
             }
         }

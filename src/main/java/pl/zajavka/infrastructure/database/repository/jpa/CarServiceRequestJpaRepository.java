@@ -7,6 +7,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import pl.zajavka.infrastructure.database.entity.CarServiceRequestEntity;
 
+import java.util.Optional;
 import java.util.Set;
 
 @Repository
@@ -26,5 +27,21 @@ public interface CarServiceRequestJpaRepository extends JpaRepository<CarService
         }
     )
     Set<CarServiceRequestEntity> findAllByCompletedDateTimeIsNull();
-
+    
+    /**
+     * Finds a service request by its number with all details including service mechanics and parts.
+     * Uses EntityGraph to fetch all related entities in one query.
+     */
+    @EntityGraph(
+        type = EntityGraph.EntityGraphType.FETCH,
+        attributePaths = {
+            "car",
+            "serviceMechanics",
+            "serviceMechanics.mechanic",
+            "serviceMechanics.service",
+            "serviceParts",
+            "serviceParts.part"
+        }
+    )
+    Optional<CarServiceRequestEntity> findByCarServiceRequestNumber(String carServiceRequestNumber);
 }

@@ -163,6 +163,34 @@
             background: #e9ecef;
             color: #495057;
         }
+        
+        .mechanic-badge {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 1rem;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        
+        .hours-badge {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 1rem;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        
+        .comment-box {
+            background: #fff3cd;
+            border-left: 3px solid #ffc107;
+            padding: 0.5rem 0.75rem;
+            border-radius: 0 0.5rem 0.5rem 0;
+            font-style: italic;
+            color: #856404;
+            font-size: 0.9rem;
+        }
     </style>
     <title>Car History - Zajavka Car Dealer</title>
 </head>
@@ -264,25 +292,47 @@
                     </div>
                 </div>
                 
-                <!-- Services Table -->
-                <div class="mb-3">
+                <!-- Services Table - Now showing each service with mechanic details -->
+                <div class="mb-3" th:if="${serviceRequest.serviceWorks != null and !serviceRequest.serviceWorks.isEmpty()}">
                     <h6 class="fw-semibold text-primary">
-                        <i class="bi bi-wrench me-2"></i>Services
+                        <i class="bi bi-wrench me-2"></i>Services Performed
                     </h6>
                     <div class="table-responsive">
                         <table class="table table-sm nested-table mb-0">
                             <thead>
                                 <tr>
-                                    <th>Service Code</th>
-                                    <th>Description</th>
+                                    <th>Service</th>
+                                    <th>Mechanic</th>
+                                    <th>Hours</th>
                                     <th>Price</th>
+                                    <th>Mechanic Comment</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr th:each="service : ${serviceRequest.services}">
-                                    <td><code th:text="${service.serviceCode}"></code></td>
-                                    <td th:text="${service.description}"></td>
-                                    <td><span class="fw-bold text-success" th:text="${'$' + service.price}"></span></td>
+                                <tr th:each="serviceWork : ${serviceRequest.serviceWorks}">
+                                    <td>
+                                        <code th:text="${serviceWork.serviceCode}"></code><br/>
+                                        <small class="text-muted" th:text="${serviceWork.description}"></small>
+                                    </td>
+                                    <td>
+                                        <span class="mechanic-badge">
+                                            <i class="bi bi-person-badge me-1"></i>
+                                            <span th:text="${serviceWork.mechanicName + ' ' + serviceWork.mechanicSurname}"></span>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="hours-badge">
+                                            <i class="bi bi-clock me-1"></i>
+                                            <span th:text="${serviceWork.hours != null ? serviceWork.hours : 'N/A'}"></span>
+                                        </span>
+                                    </td>
+                                    <td><span class="fw-bold text-success" th:text="${'$' + serviceWork.price}"></span></td>
+                                    <td>
+                                        <div th:if="${serviceWork.mechanicComment != null and !serviceWork.mechanicComment.isEmpty()}" 
+                                             class="comment-box" th:text="${serviceWork.mechanicComment}"></div>
+                                        <span th:unless="${serviceWork.mechanicComment != null and !serviceWork.mechanicComment.isEmpty()}" 
+                                              class="text-muted">-</span>
+                                    </td>
                                 </tr>
                             </tbody>
                         </table>
@@ -290,9 +340,9 @@
                 </div>
                 
                 <!-- Parts Table -->
-                <div>
+                <div th:if="${serviceRequest.parts != null and !serviceRequest.parts.isEmpty()}">
                     <h6 class="fw-semibold text-primary">
-                        <i class="bi bi-gear me-2"></i>Parts
+                        <i class="bi bi-gear me-2"></i>Parts Used
                     </h6>
                     <div class="table-responsive">
                         <table class="table table-sm nested-table mb-0">

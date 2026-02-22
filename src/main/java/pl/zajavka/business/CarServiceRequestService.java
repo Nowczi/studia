@@ -35,6 +35,16 @@ public class CarServiceRequestService {
     public List<CarServiceRequest> availableServiceRequests() {
         return carServiceRequestDAO.findAvailable();
     }
+    
+    /**
+     * Finds a service request by its number with all details including service mechanics and parts.
+     * @param serviceRequestNumber the service request number
+     * @return Optional containing the service request with all details
+     */
+    @Transactional
+    public Optional<CarServiceRequest> findServiceRequestByNumberWithDetails(String serviceRequestNumber) {
+        return carServiceRequestDAO.findByServiceRequestNumberWithDetails(serviceRequestNumber);
+    }
 
     @Transactional
     public void makeServiceRequest(CarServiceRequest serviceRequest) {
