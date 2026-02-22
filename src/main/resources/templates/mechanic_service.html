@@ -204,7 +204,7 @@
                                     <code class="bg-light px-2 py-1 rounded" th:text="${serviceRequest.carVin}"></code>
                                 </td>
                                 <td>
-                                    <a th:href="@{/mechanic/service/{id}(id=${serviceRequest.carServiceRequestNumber})}" 
+                                    <a th:href="@{/mechanic/work/{serviceRequestNumber}(serviceRequestNumber=${serviceRequest.carServiceRequestNumber})}" 
                                        class="btn btn-gradient-mechanic btn-sm">
                                         <i class="bi bi-wrench me-1"></i>Work
                                     </a>

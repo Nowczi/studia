@@ -11,4 +11,8 @@ public interface CarToBuyEntityMapper {
 
     @Mapping(target = "invoice", ignore = true)
     CarToBuy mapFromEntity(CarToBuyEntity entity);
+
+    @Mapping(target = "carToBuyId", ignore = true)  // ID is auto-generated
+    @Mapping(target = "invoice", ignore = true)      // Invoice is set separately
+    CarToBuyEntity mapToEntity(CarToBuy car);
 }

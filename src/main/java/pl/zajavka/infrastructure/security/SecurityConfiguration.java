@@ -49,6 +49,7 @@ public class SecurityConfiguration {
                 .disable()
                 .authorizeHttpRequests()
                 .requestMatchers("/login", "/error", "/images/oh_no.png").permitAll()
+                .requestMatchers(("/swagger-ui/**")).permitAll()
                 .requestMatchers("/admin/**").hasAnyAuthority("ADMIN")
                 .requestMatchers("/mechanic/**").hasAnyAuthority("MECHANIC", "ADMIN")
                 .requestMatchers("/salesman/**", "/purchase/**", "/service/**").hasAnyAuthority("SALESMAN", "ADMIN")

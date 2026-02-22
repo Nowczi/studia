@@ -7,6 +7,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.servlet.ModelAndView;
 import pl.zajavka.api.dto.CarServiceMechanicProcessingUnitDTO;
@@ -40,6 +41,7 @@ public class MechanicController {
 
     public static final String MECHANIC = "/mechanic";
     public static final String MECHANIC_WORK_UNIT = "/mechanic/workUnit";
+    public static final String MECHANIC_WORK = "/mechanic/work/{serviceRequestNumber}";
 
     private final CarServiceProcessingService carServiceProcessingService;
     private final CarServiceRequestService carServiceRequestService;
@@ -82,6 +84,22 @@ public class MechanicController {
         }
         
         return new ModelAndView("mechanic_service", data);
+    }
+    
+    @GetMapping(value = MECHANIC_WORK)
+    public ModelAndView mechanicWorkPage(@PathVariable String serviceRequestNumber) {
+        Map<String, Object> data = new HashMap<>(prepareNecessaryData());
+        
+        // Find the specific service request
+        var serviceRequest = getAvailableServiceRequests().stream()
+            .filter(req -> req.getCarServiceRequestNumber().equals(serviceRequestNumber))
+            .findFirst()
+            .orElse(null);
+        
+        data.put("serviceRequest", serviceRequest);
+        data.put("carServiceProcessDTO", CarServiceMechanicProcessingUnitDTO.buildDefault());
+        
+        return new ModelAndView("mechanic_work_unit", data);
     }
 
     private Map<String, ?> prepareNecessaryData() {

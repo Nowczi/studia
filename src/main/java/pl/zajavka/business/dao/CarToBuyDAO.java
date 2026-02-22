@@ -11,6 +11,8 @@ public interface CarToBuyDAO {
     Optional<CarToBuy> findCarToBuyByVin(String vin);
 
     List<CarToBuy> findAvailable();
+    
+    CarToBuy saveCarToBuy(CarToBuy carToBuy);
 
     List<CarToBuy> searchAvailableCars(String brand, String model, Integer yearFrom, Integer yearTo, 
                                         String color, BigDecimal priceFrom, BigDecimal priceTo);

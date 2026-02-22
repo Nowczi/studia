@@ -95,6 +95,11 @@
             color: white;
         }
         
+        .card-icon-info {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
         .btn-gradient-primary {
             background: var(--primary-gradient);
             border: none;
@@ -238,7 +243,19 @@
             Quick Actions
         </h3>
         <div class="row g-4">
-            <div class="col-md-4">
+            <div class="col-md-3">
+                <div class="card card-modern action-card h-100">
+                    <div class="card-icon card-icon-info mx-auto">
+                        <i class="bi bi-plus-circle"></i>
+                    </div>
+                    <h4>Add New Car</h4>
+                    <p>Add a new car to the dealership inventory</p>
+                    <a th:href="@{/salesman/car/add}" class="btn btn-gradient-primary">
+                        <i class="bi bi-arrow-right me-2"></i>Add Car
+                    </a>
+                </div>
+            </div>
+            <div class="col-md-3">
                 <div class="card card-modern action-card h-100">
                     <div class="card-icon card-icon-primary mx-auto">
                         <i class="bi bi-cart-plus"></i>
@@ -250,7 +267,7 @@
                     </a>
                 </div>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <div class="card card-modern action-card h-100">
                     <div class="card-icon card-icon-success mx-auto">
                         <i class="bi bi-tools"></i>
@@ -262,7 +279,7 @@
                     </a>
                 </div>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <div class="card card-modern action-card h-100">
                     <div class="card-icon card-icon-warning mx-auto">
                         <i class="bi bi-clock-history"></i>

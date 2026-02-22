@@ -52,6 +52,13 @@ public class CarService {
     public Optional<CarToBuy> findOptionalCarToBuy(String vin) {
         return carToBuyDAO.findCarToBuyByVin(vin);
     }
+    
+    @Transactional
+    public CarToBuy saveCarToBuy(CarToBuy carToBuy) {
+        CarToBuy savedCar = carToBuyDAO.saveCarToBuy(carToBuy);
+        log.info("Saved new car to buy with VIN: [{}]", savedCar.getVin());
+        return savedCar;
+    }
 
     @Transactional
     public Optional<CarToService> findCarToService(String vin) {

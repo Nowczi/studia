@@ -13,7 +13,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.util.LinkedMultiValueMap;
-import pl.zajavka.api.dto.mapper.CarMapper;
 import pl.zajavka.api.dto.mapper.CarPurchaseMapper;
 import pl.zajavka.domain.Invoice;
 

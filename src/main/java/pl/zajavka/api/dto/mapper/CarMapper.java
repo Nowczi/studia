@@ -16,6 +16,11 @@ import java.util.List;
 public interface CarMapper extends OffsetDateTimeMapper {
 
     CarToBuyDTO map(final CarToBuy car);
+    
+    // Reverse mapping from DTO to domain
+    @Mapping(target = "carToBuyId", ignore = true)
+    @Mapping(target = "invoice", ignore = true)
+    CarToBuy map(final CarToBuyDTO carDTO);
 
     CarToServiceDTO map(final CarToService car);
 
