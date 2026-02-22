@@ -54,9 +54,14 @@ public class CarServiceProcessingService {
         CarServiceRequest serviceRequest,
         Service service
     ) {
+        // If parts are included, use part quantity as service quantity
+        // This ensures service appears multiple times when multiple parts are used
+        Integer quantity = request.partNotIncluded() ? 1 : request.getPartQuantity();
+        
         return ServiceMechanic.builder()
             .hours(request.getHours())
             .comment(request.getComment())
+            .quantity(quantity)
             .carServiceRequest(serviceRequest)
             .mechanic(mechanic)
             .service(service)

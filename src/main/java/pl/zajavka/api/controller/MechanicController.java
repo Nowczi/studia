@@ -236,6 +236,7 @@ public class MechanicController {
     /**
      * Gets completed work for a service request by extracting service mechanics and parts.
      * This method now receives the full CarServiceRequest domain object with all details.
+     * Services and parts are expanded based on quantity - if quantity is 3, it appears 3 times.
      */
     private List<CompletedWorkDTO> getCompletedWorkForRequest(CarServiceRequest request) {
         if (request == null) {
@@ -244,30 +245,38 @@ public class MechanicController {
         
         List<CompletedWorkDTO> completedWork = new ArrayList<>();
         
-        // Get service mechanics (work done)
+        // Get service mechanics (work done) - expand based on quantity
         if (request.getServiceMechanics() != null) {
             for (var serviceMechanic : request.getServiceMechanics()) {
-                CompletedWorkDTO work = new CompletedWorkDTO();
-                work.setMechanicName(serviceMechanic.getMechanic() != null ? 
-                    serviceMechanic.getMechanic().getName() + " " + serviceMechanic.getMechanic().getSurname() : "Unknown");
-                work.setServiceName(serviceMechanic.getService() != null ? 
-                    serviceMechanic.getService().getDescription() : "Unknown Service");
-                work.setHours(serviceMechanic.getHours());
-                work.setComment(serviceMechanic.getComment());
-                completedWork.add(work);
+                int quantity = serviceMechanic.getQuantity() != null ? serviceMechanic.getQuantity() : 1;
+                // Add entry for each unit of quantity
+                for (int i = 0; i < quantity; i++) {
+                    CompletedWorkDTO work = new CompletedWorkDTO();
+                    work.setMechanicName(serviceMechanic.getMechanic() != null ? 
+                        serviceMechanic.getMechanic().getName() + " " + serviceMechanic.getMechanic().getSurname() : "Unknown");
+                    work.setServiceName(serviceMechanic.getService() != null ? 
+                        serviceMechanic.getService().getDescription() : "Unknown Service");
+                    work.setHours(serviceMechanic.getHours());
+                    work.setComment(serviceMechanic.getComment());
+                    completedWork.add(work);
+                }
             }
         }
         
-        // Get service parts (parts used)
+        // Get service parts (parts used) - expand based on quantity
         if (request.getServiceParts() != null) {
             for (var servicePart : request.getServiceParts()) {
-                CompletedWorkDTO work = new CompletedWorkDTO();
-                work.setMechanicName("-");
-                work.setPartName(servicePart.getPart() != null ? 
-                    servicePart.getPart().getDescription() : "Unknown Part");
-                work.setPartQuantity(servicePart.getQuantity());
-                work.setComment("-");
-                completedWork.add(work);
+                int quantity = servicePart.getQuantity() != null ? servicePart.getQuantity() : 1;
+                // Add entry for each unit of quantity
+                for (int i = 0; i < quantity; i++) {
+                    CompletedWorkDTO work = new CompletedWorkDTO();
+                    work.setMechanicName("-");
+                    work.setPartName(servicePart.getPart() != null ? 
+                        servicePart.getPart().getDescription() : "Unknown Part");
+                    work.setPartQuantity(1); // Each entry represents 1 unit
+                    work.setComment("-");
+                    completedWork.add(work);
+                }
             }
         }
         

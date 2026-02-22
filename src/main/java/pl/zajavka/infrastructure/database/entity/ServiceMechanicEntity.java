@@ -20,7 +20,7 @@ import lombok.ToString;
 @Getter
 @Setter
 @EqualsAndHashCode(of = "serviceMechanicId")
-@ToString(of = {"serviceMechanicId", "hours", "comment"})
+@ToString(of = {"serviceMechanicId", "hours", "comment", "quantity"})
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -38,6 +38,9 @@ public class ServiceMechanicEntity {
 
     @Column(name = "comment")
     private String comment;
+
+    @Column(name = "quantity")
+    private Integer quantity;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "car_service_request_id")

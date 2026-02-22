@@ -29,7 +29,7 @@ public interface CarToServiceEntityMapper {
                     .completedDateTime(request.getCompletedDateTime())
                     .customerComment(request.getCustomerComment())
                     // Map each ServiceMechanicEntity to ServiceWork to show mechanic details
-                    // This avoids duplication since each entry represents unique work by a mechanic
+                    // Use distinct() to remove duplicates caused by cartesian product from EntityGraph fetch
                     .serviceWorks(request.getServiceMechanics().stream()
                         .map(sm -> CarHistory.ServiceWork.builder()
                             .serviceCode(sm.getService().getServiceCode())
@@ -40,6 +40,7 @@ public interface CarToServiceEntityMapper {
                             .hours(sm.getHours())
                             .mechanicComment(sm.getComment())
                             .build())
+                        .distinct()
                         .collect(Collectors.toList()))
                     .parts(request.getServiceParts().stream()
                         .map(ServicePartEntity::getPart)
@@ -48,6 +49,7 @@ public interface CarToServiceEntityMapper {
                             .description(service.getDescription())
                             .price(service.getPrice())
                             .build())
+                        .distinct()
                         .collect(Collectors.toList()))
                     .build())
                 .collect(Collectors.toList()))
