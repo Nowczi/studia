@@ -2,7 +2,7 @@ CREATE TABLE service_mechanic
 (
     service_mechanic_id SERIAL          NOT NULL,
     hours                   INT         NOT NULL,
-    comment                 VARCHAR(32) NOT NULL,
+    comment                 TEXT        NOT NULL,
     car_service_request_id  INT         NOT NULL,
     mechanic_id             INT         NOT NULL,
     service_id              INT         NOT NULL,
