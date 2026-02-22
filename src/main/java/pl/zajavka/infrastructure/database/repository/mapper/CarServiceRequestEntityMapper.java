@@ -14,6 +14,7 @@ import pl.zajavka.infrastructure.database.entity.CarServiceRequestEntity;
 import pl.zajavka.infrastructure.database.entity.ServiceMechanicEntity;
 import pl.zajavka.infrastructure.database.entity.ServicePartEntity;
 
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -36,38 +37,70 @@ public interface CarServiceRequestEntityMapper {
     /**
      * Maps entity with all details including service mechanics and parts.
      * This is needed for the mechanic work page to show completed work.
+     * Groups by entity ID and sums quantities to handle duplicates from EntityGraph cartesian product.
      */
     default CarServiceRequest mapFromEntityWithDetails(CarServiceRequestEntity entity) {
-        // Map service mechanics
+        // Map service mechanics - group by ID and sum quantities
         Set<ServiceMechanic> serviceMechanics = entity.getServiceMechanics().stream()
-            .map(sm -> ServiceMechanic.builder()
-                .serviceMechanicId(sm.getServiceMechanicId())
-                .hours(sm.getHours())
-                .comment(sm.getComment())
-                .mechanic(sm.getMechanic() != null ? Mechanic.builder()
-                    .name(sm.getMechanic().getName())
-                    .surname(sm.getMechanic().getSurname())
-                    .pesel(sm.getMechanic().getPesel())
-                    .build() : null)
-                .service(sm.getService() != null ? Service.builder()
-                    .serviceCode(sm.getService().getServiceCode())
-                    .description(sm.getService().getDescription())
-                    .price(sm.getService().getPrice())
-                    .build() : null)
-                .build())
+            .filter(Objects::nonNull)
+            .collect(Collectors.groupingBy(
+                ServiceMechanicEntity::getServiceMechanicId,
+                Collectors.summingInt(sm -> sm.getQuantity() != null && sm.getQuantity() > 0 ? sm.getQuantity() : 1)
+            ))
+            .entrySet().stream()
+            .map(entry -> {
+                Integer serviceMechanicId = entry.getKey();
+                Integer totalQuantity = entry.getValue();
+                // Find the entity to get other fields
+                ServiceMechanicEntity sm = entity.getServiceMechanics().stream()
+                    .filter(e -> e.getServiceMechanicId().equals(serviceMechanicId))
+                    .findFirst()
+                    .orElseThrow();
+                return ServiceMechanic.builder()
+                    .serviceMechanicId(serviceMechanicId)
+                    .hours(sm.getHours())
+                    .comment(sm.getComment())
+                    .quantity(totalQuantity)
+                    .mechanic(sm.getMechanic() != null ? Mechanic.builder()
+                        .name(sm.getMechanic().getName())
+                        .surname(sm.getMechanic().getSurname())
+                        .pesel(sm.getMechanic().getPesel())
+                        .build() : null)
+                    .service(sm.getService() != null ? Service.builder()
+                        .serviceCode(sm.getService().getServiceCode())
+                        .description(sm.getService().getDescription())
+                        .price(sm.getService().getPrice())
+                        .build() : null)
+                    .build();
+            })
             .collect(Collectors.toSet());
         
-        // Map service parts
+        // Map service parts - group by ID and sum quantities
         Set<ServicePart> serviceParts = entity.getServiceParts().stream()
-            .map(sp -> ServicePart.builder()
-                .servicePartId(sp.getServicePartId())
-                .quantity(sp.getQuantity())
-                .part(sp.getPart() != null ? Part.builder()
-                    .serialNumber(sp.getPart().getSerialNumber())
-                    .description(sp.getPart().getDescription())
-                    .price(sp.getPart().getPrice())
-                    .build() : null)
-                .build())
+            .filter(Objects::nonNull)
+            .collect(Collectors.groupingBy(
+                ServicePartEntity::getServicePartId,
+                Collectors.summingInt(sp -> sp.getQuantity() != null && sp.getQuantity() > 0 ? sp.getQuantity() : 1)
+            ))
+            .entrySet().stream()
+            .map(entry -> {
+                Integer servicePartId = entry.getKey();
+                Integer totalQuantity = entry.getValue();
+                // Find the entity to get other fields
+                ServicePartEntity sp = entity.getServiceParts().stream()
+                    .filter(e -> e.getServicePartId().equals(servicePartId))
+                    .findFirst()
+                    .orElseThrow();
+                return ServicePart.builder()
+                    .servicePartId(servicePartId)
+                    .quantity(totalQuantity)
+                    .part(sp.getPart() != null ? Part.builder()
+                        .serialNumber(sp.getPart().getSerialNumber())
+                        .description(sp.getPart().getDescription())
+                        .price(sp.getPart().getPrice())
+                        .build() : null)
+                    .build();
+            })
             .collect(Collectors.toSet());
         
         return CarServiceRequest.builder()
