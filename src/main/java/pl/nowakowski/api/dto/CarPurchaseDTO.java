@@ -42,14 +42,15 @@ public class CarPurchaseDTO {
 
     public static CarPurchaseDTO buildDefaultData() {
         return CarPurchaseDTO.builder()
-            .customerName("John")
-            .customerSurname("Smith")
-            .customerPhone("+48 754 552 234")
-            .customerEmail("john.smith@gmail.com")
-            .customerAddressCountry("Poland")
-            .customerAddressCity("Wroclaw")
-            .customerAddressPostalCode("50-001")
-            .customerAddressStreet("Bokserska 15")
+            .customerName("")
+            .customerSurname("")
+            .customerPhone("")
+            .customerEmail("")
+            .customerAddressCountry("")
+            .customerAddressCity("")
+            .customerAddressPostalCode("")
+            .customerAddressStreet("")
+            .existingCustomerEmail("")
             .build();
     }
 

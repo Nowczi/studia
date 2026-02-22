@@ -329,6 +329,19 @@
                         <span class="request-info-label"><i class="bi bi-upc-scan me-2"></i>Car VIN:</span>
                         <span class="request-info-value"><code class="vin-code" th:text="${serviceRequest.carVin}"></code></span>
                     </div>
+                    <!-- Car Details -->
+                    <div class="request-info-item" th:if="${serviceRequest.carBrand != null}">
+                        <span class="request-info-label"><i class="bi bi-building me-2"></i>Brand:</span>
+                        <span class="request-info-value fw-semibold text-primary" th:text="${serviceRequest.carBrand}"></span>
+                    </div>
+                    <div class="request-info-item" th:if="${serviceRequest.carModel != null}">
+                        <span class="request-info-label"><i class="bi bi-car-front me-2"></i>Model:</span>
+                        <span class="request-info-value fw-semibold" th:text="${serviceRequest.carModel}"></span>
+                    </div>
+                    <div class="request-info-item" th:if="${serviceRequest.carYear != null}">
+                        <span class="request-info-label"><i class="bi bi-calendar-check me-2"></i>Year:</span>
+                        <span class="request-info-value"><span class="badge bg-info text-dark" th:text="${serviceRequest.carYear}"></span></span>
+                    </div>
                     <div class="request-info-item">
                         <span class="request-info-label"><i class="bi bi-chat-left-text me-2"></i>Customer Comment:</span>
                         <span class="request-info-value" th:text="${serviceRequest.customerComment}"></span>

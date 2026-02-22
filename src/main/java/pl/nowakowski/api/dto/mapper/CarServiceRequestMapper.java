@@ -54,6 +54,9 @@ public interface CarServiceRequestMapper extends OffsetDateTimeMapper {
     }
 
     @Mapping(source = "car.vin", target = "carVin")
+    @Mapping(source = "car.brand", target = "carBrand")
+    @Mapping(source = "car.model", target = "carModel")
+    @Mapping(source = "car.year", target = "carYear")
     @Mapping(source = "receivedDateTime", target = "receivedDateTime", qualifiedByName = "mapOffsetDateTimeToString")
     @Mapping(source = "completedDateTime", target = "completedDateTime", qualifiedByName = "mapOffsetDateTimeToString")
     CarServiceRequestDTO map(CarServiceRequest request);

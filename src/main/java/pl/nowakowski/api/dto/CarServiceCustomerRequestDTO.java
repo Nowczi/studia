@@ -40,9 +40,22 @@ public class CarServiceCustomerRequestDTO {
 
     public static CarServiceCustomerRequestDTO buildDefault() {
         return CarServiceCustomerRequestDTO.builder()
-            .existingCustomerEmail("alf.samoch@gmail.com")
-            .existingCarVin("1FT7X2B60FEA74019")
-            .customerComment("Olej cieknie mi na stopy")
+            .existingCustomerEmail("")
+            .existingCarVin("")
+            .customerComment("")
+            .customerName("")
+            .customerSurname("")
+            .customerPhone("")
+            .customerEmail("")
+            .customerAddressCountry("")
+            .customerAddressCity("")
+            .customerAddressPostalCode("")
+            .customerAddressStreet("")
+            .carVin("")
+            .carBrand("")
+            .carModel("")
+            .existingCarBrand("")
+            .existingCarModel("")
             .build();
     }
 

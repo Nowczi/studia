@@ -4,11 +4,13 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import pl.nowakowski.api.dto.CarPurchaseDTO;
 import pl.nowakowski.api.dto.CarSearchDTO;
 import pl.nowakowski.api.dto.CarToBuyDTO;
@@ -20,9 +22,11 @@ import pl.nowakowski.domain.Invoice;
 import pl.nowakowski.domain.Salesman;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.regex.Pattern;
 
 @Controller
 @RequiredArgsConstructor
@@ -106,24 +110,114 @@ public class PurchaseController {
         );
     }
 
+    // Validation patterns
+    private static final Pattern PHONE_PATTERN = Pattern.compile("^[+]?[0-9\\s-]{9,20}$");
+    private static final Pattern POSTAL_CODE_PATTERN = Pattern.compile("^[0-9]{2}-[0-9]{3}$");
+    private static final Pattern EMAIL_PATTERN = Pattern.compile("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$");
+
     @PostMapping(value = PURCHASE)
     public String makePurchase(
         @Valid @ModelAttribute("carPurchaseDTO") CarPurchaseDTO carPurchaseDTO,
-        ModelMap model
+        BindingResult bindingResult,
+        ModelMap model,
+        RedirectAttributes redirectAttributes
     ) {
-        CarPurchaseRequest request = carPurchaseMapper.map(carPurchaseDTO);
-        Invoice invoice = carPurchaseService.purchase(request);
-
-        if (existingCustomerEmailExists(carPurchaseDTO.getExistingCustomerEmail())) {
-            model.addAttribute("existingCustomerEmail", carPurchaseDTO.getExistingCustomerEmail());
+        // Check if using existing customer
+        boolean isExistingCustomer = existingCustomerEmailExists(carPurchaseDTO.getExistingCustomerEmail());
+        
+        // Validate based on customer type
+        List<String> errors = new ArrayList<>();
+        
+        if (isExistingCustomer) {
+            // Validate existing customer email format
+            if (!EMAIL_PATTERN.matcher(carPurchaseDTO.getExistingCustomerEmail()).matches()) {
+                errors.add("Invalid email format. Please use format: example@domain.com");
+            }
         } else {
-            model.addAttribute("customerName", carPurchaseDTO.getCustomerName());
-            model.addAttribute("customerSurname", carPurchaseDTO.getCustomerSurname());
+            // Validate new customer fields
+            errors.addAll(validateNewCustomer(carPurchaseDTO));
         }
+        
+        // If there are validation errors, redirect back with error messages
+        if (!errors.isEmpty()) {
+            redirectAttributes.addFlashAttribute("errorMessages", errors);
+            redirectAttributes.addFlashAttribute("carPurchaseDTO", carPurchaseDTO);
+            return "redirect:/purchase";
+        }
+        
+        try {
+            CarPurchaseRequest request = carPurchaseMapper.map(carPurchaseDTO);
+            Invoice invoice = carPurchaseService.purchase(request);
 
-        model.addAttribute("invoiceNumber", invoice.getInvoiceNumber());
+            if (isExistingCustomer) {
+                model.addAttribute("existingCustomerEmail", carPurchaseDTO.getExistingCustomerEmail());
+            } else {
+                model.addAttribute("customerName", carPurchaseDTO.getCustomerName());
+                model.addAttribute("customerSurname", carPurchaseDTO.getCustomerSurname());
+            }
 
-        return "car_purchase_done";
+            model.addAttribute("invoiceNumber", invoice.getInvoiceNumber());
+
+            return "car_purchase_done";
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Error processing purchase: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("carPurchaseDTO", carPurchaseDTO);
+            return "redirect:/purchase";
+        }
+    }
+    
+    private List<String> validateNewCustomer(CarPurchaseDTO dto) {
+        List<String> errors = new ArrayList<>();
+        
+        // Name validation
+        if (dto.getCustomerName() == null || dto.getCustomerName().trim().isEmpty()) {
+            errors.add("Name is required.");
+        } else if (dto.getCustomerName().trim().length() < 2) {
+            errors.add("Name must be at least 2 characters long.");
+        }
+        
+        // Surname validation
+        if (dto.getCustomerSurname() == null || dto.getCustomerSurname().trim().isEmpty()) {
+            errors.add("Surname is required.");
+        } else if (dto.getCustomerSurname().trim().length() < 2) {
+            errors.add("Surname must be at least 2 characters long.");
+        }
+        
+        // Email validation
+        if (dto.getCustomerEmail() == null || dto.getCustomerEmail().trim().isEmpty()) {
+            errors.add("Email is required.");
+        } else if (!EMAIL_PATTERN.matcher(dto.getCustomerEmail()).matches()) {
+            errors.add("Invalid email format. Please use format: example@domain.com");
+        }
+        
+        // Phone validation
+        if (dto.getCustomerPhone() == null || dto.getCustomerPhone().trim().isEmpty()) {
+            errors.add("Phone number is required.");
+        } else if (!PHONE_PATTERN.matcher(dto.getCustomerPhone().trim()).matches()) {
+            errors.add("Invalid phone format. Please use format: +XX XXX XXX XXX or similar (9-20 digits, can include spaces, +, and -). Example: +48 123 456 789");
+        }
+        
+        // Address validation
+        if (dto.getCustomerAddressCountry() == null || dto.getCustomerAddressCountry().trim().isEmpty()) {
+            errors.add("Country is required.");
+        }
+        
+        if (dto.getCustomerAddressCity() == null || dto.getCustomerAddressCity().trim().isEmpty()) {
+            errors.add("City is required.");
+        }
+        
+        // Postal code validation (Polish format: XX-XXX)
+        if (dto.getCustomerAddressPostalCode() == null || dto.getCustomerAddressPostalCode().trim().isEmpty()) {
+            errors.add("Postal code is required.");
+        } else if (!POSTAL_CODE_PATTERN.matcher(dto.getCustomerAddressPostalCode().trim()).matches()) {
+            errors.add("Invalid postal code format. Please use Polish format: XX-XXX (e.g., 50-001)");
+        }
+        
+        if (dto.getCustomerAddressStreet() == null || dto.getCustomerAddressStreet().trim().isEmpty()) {
+            errors.add("Street address is required.");
+        }
+        
+        return errors;
     }
 
     private boolean existingCustomerEmailExists(String email) {

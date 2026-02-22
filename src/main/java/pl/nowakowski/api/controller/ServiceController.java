@@ -16,6 +16,8 @@ import pl.nowakowski.domain.CarServiceRequest;
 
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.regex.Pattern;
@@ -27,8 +29,11 @@ public class ServiceController {
     private static final String SERVICE_NEW = "/service/new";
     private static final String SERVICE_REQUEST = "/service/request";
     
-    // VIN pattern: 17 characters, capital letters (excluding I, O, Q) and digits
+    // Validation patterns
     private static final Pattern VIN_PATTERN = Pattern.compile("^[A-HJ-NPR-Z0-9]{17}$");
+    private static final Pattern PHONE_PATTERN = Pattern.compile("^[+]?[0-9\\s-]{9,20}$");
+    private static final Pattern POSTAL_CODE_PATTERN = Pattern.compile("^[0-9]{2}-[0-9]{3}$");
+    private static final Pattern EMAIL_PATTERN = Pattern.compile("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$");
 
     private final CarServiceRequestService carServiceRequestService;
     private final CarServiceRequestMapper carServiceRequestMapper;
@@ -47,32 +52,43 @@ public class ServiceController {
         BindingResult bindingResult,
         RedirectAttributes redirectAttributes
     ) {
-        // Validate VIN based on whether it's a new or existing customer
-        String vin;
-        if (carServiceCustomerRequestDTO.isNewCarCandidate()) {
-            // New customer - validate carVin
-            vin = carServiceCustomerRequestDTO.getCarVin();
-            if (vin == null || vin.isBlank()) {
-                redirectAttributes.addFlashAttribute("errorMessage", "VIN is required for new customers");
-                return "redirect:/service/new";
-            }
-            if (!VIN_PATTERN.matcher(vin).matches()) {
-                redirectAttributes.addFlashAttribute("errorMessage", 
-                    "VIN must be exactly 17 characters containing only capital letters (excluding I, O, Q) and digits");
-                return "redirect:/service/new";
-            }
+        // Determine if it's a new or existing customer
+        boolean isNewCustomer = carServiceCustomerRequestDTO.isNewCarCandidate();
+        
+        // Validate based on customer type
+        List<String> errors = new ArrayList<>();
+        
+        // Validate VIN
+        String vin = isNewCustomer ? carServiceCustomerRequestDTO.getCarVin() : carServiceCustomerRequestDTO.getExistingCarVin();
+        if (vin == null || vin.trim().isEmpty()) {
+            errors.add("VIN is required.");
+        } else if (!VIN_PATTERN.matcher(vin.trim()).matches()) {
+            errors.add("Invalid VIN format. VIN must be exactly 17 characters containing only capital letters (excluding I, O, Q) and digits. Example: 1FT7X2B60FEA74019");
+        }
+        
+        if (isNewCustomer) {
+            // Validate new customer fields
+            errors.addAll(validateNewCustomerForService(carServiceCustomerRequestDTO));
         } else {
-            // Existing customer - validate existingCarVin
-            vin = carServiceCustomerRequestDTO.getExistingCarVin();
-            if (vin == null || vin.isBlank()) {
-                redirectAttributes.addFlashAttribute("errorMessage", "VIN is required for existing customers");
-                return "redirect:/service/new";
+            // Validate existing customer email
+            String email = carServiceCustomerRequestDTO.getExistingCustomerEmail();
+            if (email == null || email.trim().isEmpty()) {
+                errors.add("Email is required for existing customers.");
+            } else if (!EMAIL_PATTERN.matcher(email.trim()).matches()) {
+                errors.add("Invalid email format. Please use format: example@domain.com");
             }
-            if (!VIN_PATTERN.matcher(vin).matches()) {
-                redirectAttributes.addFlashAttribute("errorMessage", 
-                    "VIN must be exactly 17 characters containing only capital letters (excluding I, O, Q) and digits");
-                return "redirect:/service/new";
-            }
+        }
+        
+        // Validate comment
+        if (carServiceCustomerRequestDTO.getCustomerComment() == null || carServiceCustomerRequestDTO.getCustomerComment().trim().isEmpty()) {
+            errors.add("Service comment is required. Please describe the issue with your car.");
+        }
+        
+        // If there are validation errors, redirect back with error messages
+        if (!errors.isEmpty()) {
+            redirectAttributes.addFlashAttribute("errorMessages", errors);
+            redirectAttributes.addFlashAttribute("carServiceRequestDTO", carServiceCustomerRequestDTO);
+            return "redirect:/service/new";
         }
         
         try {
@@ -89,8 +105,81 @@ public class ServiceController {
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMessage", 
                 "Error creating service request: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("carServiceRequestDTO", carServiceCustomerRequestDTO);
             return "redirect:/service/new";
         }
+    }
+    
+    private List<String> validateNewCustomerForService(CarServiceCustomerRequestDTO dto) {
+        List<String> errors = new ArrayList<>();
+        
+        // Name validation
+        if (dto.getCustomerName() == null || dto.getCustomerName().trim().isEmpty()) {
+            errors.add("Name is required.");
+        } else if (dto.getCustomerName().trim().length() < 2) {
+            errors.add("Name must be at least 2 characters long.");
+        }
+        
+        // Surname validation
+        if (dto.getCustomerSurname() == null || dto.getCustomerSurname().trim().isEmpty()) {
+            errors.add("Surname is required.");
+        } else if (dto.getCustomerSurname().trim().length() < 2) {
+            errors.add("Surname must be at least 2 characters long.");
+        }
+        
+        // Email validation
+        if (dto.getCustomerEmail() == null || dto.getCustomerEmail().trim().isEmpty()) {
+            errors.add("Email is required.");
+        } else if (!EMAIL_PATTERN.matcher(dto.getCustomerEmail().trim()).matches()) {
+            errors.add("Invalid email format. Please use format: example@domain.com");
+        }
+        
+        // Phone validation
+        if (dto.getCustomerPhone() == null || dto.getCustomerPhone().trim().isEmpty()) {
+            errors.add("Phone number is required.");
+        } else if (!PHONE_PATTERN.matcher(dto.getCustomerPhone().trim()).matches()) {
+            errors.add("Invalid phone format. Please use format: +XX XXX XXX XXX or similar (9-20 digits, can include spaces, +, and -). Example: +48 123 456 789");
+        }
+        
+        // Address validation
+        if (dto.getCustomerAddressCountry() == null || dto.getCustomerAddressCountry().trim().isEmpty()) {
+            errors.add("Country is required.");
+        }
+        
+        if (dto.getCustomerAddressCity() == null || dto.getCustomerAddressCity().trim().isEmpty()) {
+            errors.add("City is required.");
+        }
+        
+        // Postal code validation (Polish format: XX-XXX)
+        if (dto.getCustomerAddressPostalCode() == null || dto.getCustomerAddressPostalCode().trim().isEmpty()) {
+            errors.add("Postal code is required.");
+        } else if (!POSTAL_CODE_PATTERN.matcher(dto.getCustomerAddressPostalCode().trim()).matches()) {
+            errors.add("Invalid postal code format. Please use Polish format: XX-XXX (e.g., 50-001)");
+        }
+        
+        if (dto.getCustomerAddressStreet() == null || dto.getCustomerAddressStreet().trim().isEmpty()) {
+            errors.add("Street address is required.");
+        }
+        
+        // Car details validation for new cars
+        if (dto.getCarBrand() == null || dto.getCarBrand().trim().isEmpty()) {
+            errors.add("Car brand is required.");
+        }
+        
+        if (dto.getCarModel() == null || dto.getCarModel().trim().isEmpty()) {
+            errors.add("Car model is required.");
+        }
+        
+        if (dto.getCarYear() == null) {
+            errors.add("Car year is required.");
+        } else {
+            int currentYear = java.time.Year.now().getValue();
+            if (dto.getCarYear() < 1900 || dto.getCarYear() > currentYear + 1) {
+                errors.add("Car year must be between 1900 and " + (currentYear + 1) + ".");
+            }
+        }
+        
+        return errors;
     }
     
     @GetMapping(value = "/service/request/done")
