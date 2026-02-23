@@ -74,22 +74,11 @@
             border-radius: 0.75rem;
             border: 2px solid #e9ecef;
             height: calc(3.5rem + 2px);
-            padding: 1rem 1rem 1rem 3rem;
         }
         
         .form-floating .form-control:focus {
             border-color: #667eea;
             box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
-        }
-        
-        .input-icon {
-            position: absolute;
-            left: 1rem;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #6c757d;
-            font-size: 1.1rem;
-            z-index: 10;
         }
         
         .btn-login {
@@ -127,10 +116,6 @@
             color: #6c757d;
             font-size: 0.9rem;
         }
-        
-        .login-footer i {
-            color: #dc3545;
-        }
     </style>
     <title>Login - Nowakowski Car Dealer</title>
 </head>
@@ -160,14 +145,12 @@
                 </div>
                 
                 <form th:action="@{/login}" method="POST">
-                    <div class="form-floating position-relative">
-                        <i class="bi bi-person input-icon"></i>
+                    <div class="form-floating">
                         <input type="text" class="form-control" id="username" name="username" placeholder="Username" required autofocus>
                         <label for="username">Username</label>
                     </div>
                     
-                    <div class="form-floating position-relative">
-                        <i class="bi bi-lock input-icon"></i>
+                    <div class="form-floating">
                         <input type="password" class="form-control" id="password" name="password" placeholder="Password" required>
                         <label for="password">Password</label>
                     </div>

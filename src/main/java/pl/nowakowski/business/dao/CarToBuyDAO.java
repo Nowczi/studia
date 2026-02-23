@@ -13,6 +13,8 @@ public interface CarToBuyDAO {
     List<CarToBuy> findAvailable();
     
     CarToBuy saveCarToBuy(CarToBuy carToBuy);
+    
+    void deleteCarToBuy(String vin);
 
     List<CarToBuy> searchAvailableCars(String brand, String model, Integer yearFrom, Integer yearTo, 
                                         String color, BigDecimal priceFrom, BigDecimal priceTo);

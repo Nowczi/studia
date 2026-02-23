@@ -132,6 +132,40 @@
             color: white;
         }
         
+        .btn-gradient-danger {
+            background: var(--warning-gradient);
+            border: none;
+            color: white;
+            border-radius: 0.5rem;
+            padding: 0.5rem 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            font-size: 0.875rem;
+        }
+        
+        .btn-gradient-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(250, 112, 154, 0.4);
+            color: white;
+        }
+        
+        .btn-gradient-warning {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border: none;
+            color: white;
+            border-radius: 0.5rem;
+            padding: 0.5rem 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            font-size: 0.875rem;
+        }
+        
+        .btn-gradient-warning:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(240, 147, 251, 0.4);
+            color: white;
+        }
+        
         .table-modern {
             background: white;
             border-radius: 1rem;
@@ -170,6 +204,11 @@
             color: #6c757d;
             margin-bottom: 1.5rem;
         }
+        
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
     </style>
     <title>Salesman Portal - Nowakowski Car Dealer</title>
 </head>
@@ -178,7 +217,7 @@
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-custom">
         <div class="container">
-            <span class="navbar-brand">
+            <a class="navbar-brand" th:href="@{/}">
                 <i class="bi bi-car-front-fill me-2"></i>Nowakowski Car Dealer
             </a>
             <div class="d-flex align-items-center gap-3">
@@ -203,6 +242,18 @@
     </div>
 
     <div class="container pb-5">
+        <!-- Success/Error Messages -->
+        <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show mb-4" role="alert" style="border-radius: 0.75rem; border: none;">
+            <i class="bi bi-check-circle-fill me-2"></i>
+            <span th:text="${successMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show mb-4" role="alert" style="border-radius: 0.75rem; border: none;">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            <span th:text="${errorMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+
         <!-- Available Cars Section -->
         <div class="card card-modern mb-5">
             <div class="card-body p-4">
@@ -220,6 +271,7 @@
                                 <th><i class="bi bi-calendar me-1"></i>Year</th>
                                 <th><i class="bi bi-palette me-1"></i>Color</th>
                                 <th><i class="bi bi-currency-dollar me-1"></i>Price</th>
+                                <th><i class="bi bi-gear me-1"></i>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -230,6 +282,22 @@
                                 <td><span class="badge bg-info text-dark" th:text="${car.year}"></span></td>
                                 <td th:text="${car.color}"></td>
                                 <td><span class="fw-bold text-success" th:text="${'$' + car.price}"></span></td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <button type="button" class="btn btn-gradient-warning" 
+                                                data-bs-toggle="modal" 
+                                                th:data-bs-target="${'#editCarModal' + car.vin}">
+                                            <i class="bi bi-pencil me-1"></i>Edit
+                                        </button>
+                                        <form th:action="@{/salesman/car/delete}" method="POST" style="display: inline;"
+                                              onsubmit="return confirm('Are you sure you want to delete this car? This action cannot be undone.');">
+                                            <input type="hidden" name="vin" th:value="${car.vin}" />
+                                            <button type="submit" class="btn btn-gradient-danger">
+                                                <i class="bi bi-trash me-1"></i>Delete
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
                             </tr>
                         </tbody>
                     </table>
@@ -319,6 +387,58 @@
                         <i class="bi bi-arrow-right me-2"></i>View History
                     </a>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Car Modals -->
+    <div th:each="car : ${availableCarDTOs}" class="modal fade" th:id="${'editCarModal' + car.vin}" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header" style="background: var(--primary-gradient); color: white;">
+                    <h5 class="modal-title">
+                        <i class="bi bi-pencil-fill me-2"></i>Edit Car
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form th:action="@{/salesman/car/edit}" method="POST">
+                    <div class="modal-body">
+                        <input type="hidden" name="vin" th:value="${car.vin}" />
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold"><i class="bi bi-upc-scan me-2"></i>VIN</label>
+                                <input type="text" class="form-control" th:value="${car.vin}" disabled />
+                                <div class="form-text text-muted">VIN cannot be changed</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold"><i class="bi bi-building me-2"></i>Brand <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" name="brand" th:value="${car.brand}" required />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold"><i class="bi bi-car-front me-2"></i>Model <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" name="model" th:value="${car.model}" required />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold"><i class="bi bi-calendar me-2"></i>Year <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control" name="year" th:value="${car.year}" min="1900" max="2099" required />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold"><i class="bi bi-palette me-2"></i>Color <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" name="color" th:value="${car.color}" required />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold"><i class="bi bi-currency-dollar me-2"></i>Price <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control" name="price" th:value="${car.price}" min="0" step="0.01" required />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-gradient-primary">
+                            <i class="bi bi-check-lg me-1"></i>Save Changes
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>

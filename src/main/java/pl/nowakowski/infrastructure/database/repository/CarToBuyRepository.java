@@ -37,6 +37,11 @@ public class CarToBuyRepository implements CarToBuyDAO {
         var savedEntity = carToBuyJpaRepository.save(entityToSave);
         return carToBuyEntityMapper.mapFromEntity(savedEntity);
     }
+    
+    @Override
+    public void deleteCarToBuy(String vin) {
+        carToBuyJpaRepository.findByVin(vin).ifPresent(carToBuyJpaRepository::delete);
+    }
 
     @Override
     public List<CarToBuy> searchAvailableCars(String brand, String model, Integer yearFrom, Integer yearTo,

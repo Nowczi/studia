@@ -14,6 +14,7 @@ import pl.nowakowski.api.dto.mapper.CarMapper;
 import pl.nowakowski.business.CarPurchaseService;
 import pl.nowakowski.business.CarService;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Controller
@@ -22,6 +23,8 @@ public class SalesmanController {
 
     private static final String SALESMAN = "/salesman";
     private static final String SALESMAN_CAR_ADD = "/salesman/car/add";
+    private static final String SALESMAN_CAR_EDIT = "/salesman/car/edit";
+    private static final String SALESMAN_CAR_DELETE = "/salesman/car/delete";
     private static final int CARS_PER_PAGE = 10;
 
     private final CarPurchaseService carPurchaseService;
@@ -97,6 +100,78 @@ public class SalesmanController {
             redirectAttributes.addFlashAttribute("errorMessage", 
                 "Error adding car: " + e.getMessage());
             return "redirect:/salesman/car/add";
+        }
+    }
+    
+    @PostMapping(value = SALESMAN_CAR_EDIT)
+    public String editCar(
+        @RequestParam("vin") String vin,
+        @RequestParam("brand") String brand,
+        @RequestParam("model") String model,
+        @RequestParam("year") Integer year,
+        @RequestParam("color") String color,
+        @RequestParam("price") BigDecimal price,
+        RedirectAttributes redirectAttributes
+    ) {
+        try {
+            // Find the car by VIN
+            var existingCarOpt = carService.findOptionalCarToBuy(vin);
+            if (existingCarOpt.isEmpty()) {
+                redirectAttributes.addFlashAttribute("errorMessage", 
+                    "Car with VIN " + vin + " not found.");
+                return "redirect:/salesman";
+            }
+            
+            var existingCar = existingCarOpt.get();
+            
+            // Update the car with new values
+            var updatedCar = existingCar
+                .withBrand(brand)
+                .withModel(model)
+                .withYear(year)
+                .withColor(color)
+                .withPrice(price);
+            
+            // Save the updated car
+            carService.saveCarToBuy(updatedCar);
+            
+            redirectAttributes.addFlashAttribute("successMessage", 
+                "Car " + brand + " " + model + 
+                " (VIN: " + vin + ") has been successfully updated.");
+            
+            return "redirect:/salesman";
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", 
+                "Error updating car: " + e.getMessage());
+            return "redirect:/salesman";
+        }
+    }
+    
+    @PostMapping(value = SALESMAN_CAR_DELETE)
+    public String deleteCar(
+        @RequestParam("vin") String vin,
+        RedirectAttributes redirectAttributes
+    ) {
+        try {
+            // Check if car exists
+            var existingCar = carService.findOptionalCarToBuy(vin);
+            if (existingCar.isEmpty()) {
+                redirectAttributes.addFlashAttribute("errorMessage", 
+                    "Car with VIN " + vin + " not found.");
+                return "redirect:/salesman";
+            }
+            
+            // Delete the car
+            carService.deleteCarToBuy(vin);
+            
+            redirectAttributes.addFlashAttribute("successMessage", 
+                "Car with VIN " + vin + " has been successfully deleted.");
+            
+            return "redirect:/salesman";
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", 
+                "Error deleting car: " + e.getMessage());
+            return "redirect:/salesman";
         }
     }
 }
