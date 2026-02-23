@@ -14,7 +14,19 @@ public class SalesmanDTO {
 
     String name;
     String surname;
+    String userName;
 
-    @Pattern(regexp = "^[0-9]{2}([02468]1|[13579][012])(0[1-9]|1[0-9]|2[0-9]|3[01])[0-9]{5}$", message = "PESEL must be a valid 11-digit Polish identification number")
+    @Pattern(regexp = "^[0-9]{11}$", message = "PESEL must be 11 digits")
     String pesel;
+    
+    public String getDisplayName() {
+        if (name != null && surname != null && userName != null) {
+            return name + " " + surname + " - " + userName;
+        } else if (name != null && surname != null) {
+            return name + " " + surname;
+        } else if (userName != null) {
+            return userName;
+        }
+        return pesel;
+    }
 }

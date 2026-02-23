@@ -366,7 +366,7 @@
                                 <option value="">-- Select Mechanic --</option>
                                 <option th:each="mechanic : ${availableMechanicDTOs}"
                                         th:value="${mechanic.pesel}"
-                                        th:text="${mechanic.name} + ' ' + ${mechanic.surname}"></option>
+                                        th:text="${mechanic.displayName}"></option>
                             </select>
                         </div>
 

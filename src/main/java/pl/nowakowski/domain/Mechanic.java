@@ -21,4 +21,5 @@ public class Mechanic {
     String pesel;
     Set<ServiceMechanic> serviceMechanics;
     Integer userId;
+    String userName;
 }

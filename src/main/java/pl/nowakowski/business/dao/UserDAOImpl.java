@@ -22,6 +22,12 @@ public class UserDAOImpl implements UserDAO {
     private final UserMapper userMapper;
 
     @Override
+    public Optional<User> findById(Integer id) {
+        return securityUserRepository.findById(id.longValue())
+                .map(userMapper::mapFromEntity);
+    }
+
+    @Override
     public Optional<User> findByUserName(String userName) {
         UserEntity entity = securityUserRepository.findByUserName(userName);
         return Optional.ofNullable(userMapper.mapFromEntity(entity));

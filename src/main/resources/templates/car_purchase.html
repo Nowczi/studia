@@ -409,7 +409,7 @@
                         <div class="col-md-6">
                             <label class="form-label fw-semibold"><i class="bi bi-person-badge me-2"></i>Select Salesman</label>
                             <select th:field="*{salesmanPesel}" class="form-select form-select-modern">
-                                <option th:each="availableSalesmanPesel : ${availableSalesmanPesels}" th:value="${availableSalesmanPesel}" th:text="${availableSalesmanPesel}"></option>
+                                <option th:each="salesman : ${availableSalesmen}" th:value="${salesman.pesel}" th:text="${salesman.displayName}"></option>
                             </select>
                         </div>
                     </div>

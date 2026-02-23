@@ -17,9 +17,13 @@ import pl.nowakowski.api.dto.mapper.UserMapper;
 import pl.nowakowski.business.UserManagementService;
 import pl.nowakowski.domain.User;
 
+import java.time.DateTimeException;
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 @Controller
 @AllArgsConstructor
@@ -54,6 +58,12 @@ public class AdminController {
         );
     }
 
+    // Password pattern: at least 12 characters, 1 uppercase, 1 lowercase, 1 special character
+    private static final Pattern PASSWORD_PATTERN = Pattern.compile("^(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>/?]).{12,}$");
+    
+    // PESEL pattern: 11 digits
+    private static final Pattern PESEL_DIGITS_PATTERN = Pattern.compile("^[0-9]{11}$");
+
     @PostMapping(value = ADMIN_CREATE_USER)
     public String createUser(
             @Valid @ModelAttribute("newUserDTO") UserDTO userDTO,
@@ -65,22 +75,33 @@ public class AdminController {
             RedirectAttributes redirectAttributes,
             Model model
     ) {
+        List<String> errors = new ArrayList<>();
+        
         if (bindingResult.hasErrors()) {
-            model.addAllAttributes(prepareAdminData());
-            model.addAttribute("errorMessage", "Validation errors occurred");
-            return "admin_portal";
+            errors.add("Validation errors occurred in form fields.");
         }
 
         if (selectedRole == null || selectedRole.isEmpty()) {
-            model.addAllAttributes(prepareAdminData());
-            model.addAttribute("errorMessage", "Role must be selected");
-            return "admin_portal";
+            errors.add("Role must be selected.");
+        }
+        
+        // Validate password requirements
+        String password = userDTO.getPassword();
+        if (password == null || password.isEmpty()) {
+            errors.add("Password is required.");
+        } else if (!PASSWORD_PATTERN.matcher(password).matches()) {
+            errors.add("Password must be at least 12 characters long and contain at least one uppercase letter, one lowercase letter, and one special character (!@#$%^&* etc.).");
         }
 
-        // Validate PESEL format
-        if (!pesel.matches("^[0-9]{2}([02468]1|[13579][012])(0[1-9]|1[0-9]|2[0-9]|3[01])[0-9]{5}$")) {
+        // Validate PESEL format and date
+        String peselError = validatePesel(pesel);
+        if (peselError != null) {
+            errors.add(peselError);
+        }
+
+        if (!errors.isEmpty()) {
             model.addAllAttributes(prepareAdminData());
-            model.addAttribute("errorMessage", "PESEL must be a valid 11-digit Polish identification number");
+            model.addAttribute("errorMessages", errors);
             return "admin_portal";
         }
 
@@ -94,6 +115,60 @@ public class AdminController {
             model.addAttribute("errorMessage", e.getMessage());
             return "admin_portal";
         }
+    }
+    
+    /**
+     * Validates PESEL number including date validity.
+     * Returns error message if invalid, null if valid.
+     */
+    private String validatePesel(String pesel) {
+        if (pesel == null || pesel.isEmpty()) {
+            return "PESEL is required.";
+        }
+        
+        if (!PESEL_DIGITS_PATTERN.matcher(pesel).matches()) {
+            return "PESEL must be exactly 11 digits.";
+        }
+        
+        // Extract date components from PESEL
+        int yearDigits = Integer.parseInt(pesel.substring(0, 2));
+        int monthDigits = Integer.parseInt(pesel.substring(2, 4));
+        int dayDigits = Integer.parseInt(pesel.substring(4, 6));
+        
+        // Determine century and actual month
+        int century;
+        int month;
+        
+        if (monthDigits >= 1 && monthDigits <= 12) {
+            century = 1900;
+            month = monthDigits;
+        } else if (monthDigits >= 21 && monthDigits <= 32) {
+            century = 2000;
+            month = monthDigits - 20;
+        } else if (monthDigits >= 41 && monthDigits <= 52) {
+            century = 2100;
+            month = monthDigits - 40;
+        } else if (monthDigits >= 61 && monthDigits <= 72) {
+            century = 2200;
+            month = monthDigits - 60;
+        } else if (monthDigits >= 81 && monthDigits <= 92) {
+            century = 1800;
+            month = monthDigits - 80;
+        } else {
+            return "Invalid month in PESEL.";
+        }
+        
+        int year = century + yearDigits;
+        int day = dayDigits;
+        
+        // Validate the date is valid (e.g., no February 31st)
+        try {
+            LocalDate.of(year, month, day);
+        } catch (DateTimeException e) {
+            return "Invalid date in PESEL (e.g., February cannot have more than 29 days).";
+        }
+        
+        return null; // Valid
     }
 
     @PostMapping(value = ADMIN_DELETE_USER)
@@ -131,9 +206,15 @@ public class AdminController {
             RedirectAttributes redirectAttributes
     ) {
         try {
-            // Validate password length
-            if (newPassword == null || newPassword.length() < 5) {
-                redirectAttributes.addFlashAttribute("errorMessage", "Password must be at least 5 characters long");
+            // Validate password requirements
+            if (newPassword == null || newPassword.isEmpty()) {
+                redirectAttributes.addFlashAttribute("errorMessage", "Password is required.");
+                return "redirect:/admin";
+            }
+            
+            if (!PASSWORD_PATTERN.matcher(newPassword).matches()) {
+                redirectAttributes.addFlashAttribute("errorMessage", 
+                        "Password must be at least 12 characters long and contain at least one uppercase letter, one lowercase letter, and one special character (!@#$%^&* etc.).");
                 return "redirect:/admin";
             }
 

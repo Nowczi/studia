@@ -14,9 +14,12 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import pl.nowakowski.api.dto.CarPurchaseDTO;
 import pl.nowakowski.api.dto.CarSearchDTO;
 import pl.nowakowski.api.dto.CarToBuyDTO;
+import pl.nowakowski.api.dto.SalesmanDTO;
 import pl.nowakowski.api.dto.mapper.CarMapper;
 import pl.nowakowski.api.dto.mapper.CarPurchaseMapper;
+import pl.nowakowski.api.dto.mapper.SalesmanMapper;
 import pl.nowakowski.business.CarPurchaseService;
+import pl.nowakowski.business.CustomerService;
 import pl.nowakowski.domain.CarPurchaseRequest;
 import pl.nowakowski.domain.Invoice;
 import pl.nowakowski.domain.Salesman;
@@ -38,6 +41,8 @@ public class PurchaseController {
     private final CarPurchaseService carPurchaseService;
     private final CarPurchaseMapper carPurchaseMapper;
     private final CarMapper carMapper;
+    private final SalesmanMapper salesmanMapper;
+    private final CustomerService customerService;
 
     @GetMapping(value = PURCHASE)
     public ModelAndView carPurchasePage(
@@ -93,14 +98,14 @@ public class PurchaseController {
         var availableCarVins = allAvailableCars.stream()
             .map(CarToBuyDTO::getVin)
             .toList();
-        var availableSalesmanPesels = carPurchaseService.availableSalesmen().stream()
-            .map(Salesman::getPesel)
+        var availableSalesmen = carPurchaseService.availableSalesmen().stream()
+            .map(salesmanMapper::map)
             .toList();
         
         return Map.of(
             "availableCarDTOs", paginatedCars,
             "availableCarVins", availableCarVins,
-            "availableSalesmanPesels", availableSalesmanPesels,
+            "availableSalesmen", availableSalesmen,
             "carPurchaseDTO", CarPurchaseDTO.buildDefaultData(),
             "carSearchDTO", new CarSearchDTO(brand, model, yearFrom, yearTo, color, priceFrom, priceTo),
             "currentPage", page,
@@ -188,6 +193,15 @@ public class PurchaseController {
             errors.add("Email is required.");
         } else if (!EMAIL_PATTERN.matcher(dto.getCustomerEmail()).matches()) {
             errors.add("Invalid email format. Please use format: example@domain.com");
+        } else {
+            // Check if email already exists in database
+            try {
+                customerService.findCustomer(dto.getCustomerEmail().trim());
+                // If we get here, the customer exists
+                errors.add("This email already exists in our database. Please use the 'Existing Customer' section or use a different email.");
+            } catch (Exception e) {
+                // Customer not found, which is what we want for new customers
+            }
         }
         
         // Phone validation

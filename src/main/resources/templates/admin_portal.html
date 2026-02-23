@@ -215,6 +215,13 @@
             <i class="bi bi-exclamation-triangle-fill me-2"></i>
             <span th:text="${errorMessage}"></span>
         </div>
+        <div th:if="${errorMessages}" class="alert alert-danger alert-modern mb-4" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            <strong>Please correct the following errors:</strong>
+            <ul class="mb-0 mt-2">
+                <li th:each="err : ${errorMessages}" th:text="${err}"></li>
+            </ul>
+        </div>
 
         <!-- Create New User Card -->
         <div class="card card-modern mb-5">
@@ -243,7 +250,10 @@
                             <label for="password" class="form-label fw-semibold">Password</label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="bi bi-lock"></i></span>
-                                <input type="password" id="password" th:field="*{password}" class="form-control form-control-modern" required minlength="5" placeholder="Enter password">
+                                <input type="password" id="password" th:field="*{password}" class="form-control form-control-modern" required minlength="12" placeholder="Enter password">
+                            </div>
+                            <div class="form-text text-muted">
+                                <small>Min 12 chars, 1 uppercase, 1 lowercase, 1 special character (!@#$%^&* etc.)</small>
                             </div>
                         </div>
                         <div class="col-md-6">
@@ -264,7 +274,10 @@
                             <label for="pesel" class="form-label fw-semibold">PESEL</label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="bi bi-card-text"></i></span>
-                                <input type="text" id="pesel" name="pesel" class="form-control form-control-modern" required pattern="[0-9]{11}" title="PESEL must be 11 digits" placeholder="Enter 11-digit PESEL">
+                                <input type="text" id="pesel" name="pesel" class="form-control form-control-modern" required maxlength="11" placeholder="Enter 11-digit PESEL">
+                            </div>
+                            <div class="form-text text-muted">
+                                <small>11-digit Polish identification number</small>
                             </div>
                         </div>
                         <div class="col-12">
@@ -372,7 +385,10 @@
                                 <label class="form-label fw-semibold">New Password</label>
                                 <div class="input-group">
                                     <span class="input-group-text"><i class="bi bi-lock"></i></span>
-                                    <input type="password" name="newPassword" class="form-control form-control-modern" required minlength="5" placeholder="Enter new password (min 5 characters)">
+                                    <input type="password" name="newPassword" class="form-control form-control-modern" required minlength="12" placeholder="Enter new password">
+                                </div>
+                                <div class="form-text text-muted">
+                                    <small>Min 12 chars, 1 uppercase, 1 lowercase, 1 special character</small>
                                 </div>
                             </div>
                         </div>

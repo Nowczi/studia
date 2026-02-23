@@ -12,6 +12,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import pl.nowakowski.api.dto.CarServiceCustomerRequestDTO;
 import pl.nowakowski.api.dto.mapper.CarServiceRequestMapper;
 import pl.nowakowski.business.CarServiceRequestService;
+import pl.nowakowski.business.CustomerService;
 import pl.nowakowski.domain.CarServiceRequest;
 
 import java.time.OffsetDateTime;
@@ -37,6 +38,7 @@ public class ServiceController {
 
     private final CarServiceRequestService carServiceRequestService;
     private final CarServiceRequestMapper carServiceRequestMapper;
+    private final CustomerService customerService;
 
     @GetMapping(value = SERVICE_NEW)
     public ModelAndView carServicePage() {
@@ -132,6 +134,15 @@ public class ServiceController {
             errors.add("Email is required.");
         } else if (!EMAIL_PATTERN.matcher(dto.getCustomerEmail().trim()).matches()) {
             errors.add("Invalid email format. Please use format: example@domain.com");
+        } else {
+            // Check if email already exists in database
+            try {
+                customerService.findCustomer(dto.getCustomerEmail().trim());
+                // If we get here, the customer exists
+                errors.add("This email already exists in our database. Please use the 'Existing Customer' section or use a different email.");
+            } catch (Exception e) {
+                // Customer not found, which is what we want for new customers
+            }
         }
         
         // Phone validation
